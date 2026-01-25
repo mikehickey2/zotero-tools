@@ -13,14 +13,14 @@ Usage:
 """
 
 import argparse
-import os
 import re
 import sys
 import time
 
-from dotenv import load_dotenv
 from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError
+
+from zotero_utils import load_credentials
 
 # Known typos to fix
 TYPO_FIXES = {
@@ -33,29 +33,6 @@ TEXT_FIELDS = ['title', 'shortTitle', 'institution', 'publicationTitle']
 
 # Rate limiting
 RATE_LIMIT_DELAY = 0.5
-
-
-def load_credentials() -> tuple[str, str, str]:
-    """Load Zotero credentials from environment."""
-    load_dotenv()
-
-    library_id = os.getenv('ZOTERO_LIBRARY_ID')
-    library_type = os.getenv('ZOTERO_LIBRARY_TYPE', 'group')
-    api_key = os.getenv('ZOTERO_API_KEY')
-
-    missing = []
-    if not library_id:
-        missing.append('ZOTERO_LIBRARY_ID')
-    if not api_key:
-        missing.append('ZOTERO_API_KEY')
-
-    if missing:
-        print("ERROR: Missing required environment variables:")
-        for var in missing:
-            print(f"  - {var}")
-        sys.exit(1)
-
-    return library_id, library_type, api_key
 
 
 def clean_text(text: str) -> str:

@@ -18,37 +18,14 @@ Usage:
 
 import argparse
 import json
-import os
 import sys
 from datetime import datetime, timedelta
 from typing import Optional
 
-from dotenv import load_dotenv
 from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError
 
-
-def load_credentials() -> tuple[str, str, str]:
-    """Load Zotero credentials from environment."""
-    load_dotenv()
-
-    library_id = os.getenv('ZOTERO_LIBRARY_ID')
-    library_type = os.getenv('ZOTERO_LIBRARY_TYPE', 'group')
-    api_key = os.getenv('ZOTERO_API_KEY')
-
-    missing = []
-    if not library_id:
-        missing.append('ZOTERO_LIBRARY_ID')
-    if not api_key:
-        missing.append('ZOTERO_API_KEY')
-
-    if missing:
-        print("ERROR: Missing required environment variables:")
-        for var in missing:
-            print(f"  - {var}")
-        sys.exit(1)
-
-    return library_id, library_type, api_key
+from zotero_utils import load_credentials
 
 
 def get_collection_key(zot: zotero.Zotero, collection_name: str) -> Optional[str]:
@@ -218,13 +195,17 @@ def list_collections(zot: zotero.Zotero) -> list:
 def list_tags(zot: zotero.Zotero) -> list:
     """Get all tags with usage counts."""
     try:
-        tags = zot.tags()
-        result = []
-        for tag in tags:
-            result.append({
-                'tag': tag['tag'],
-                'count': tag['meta'].get('numItems', 0),
-            })
+        # Get all items to count tag usage
+        items = zot.everything(zot.items())
+        tag_counts = {}
+        for item in items:
+            item_tags = item.get('data', {}).get('tags', [])
+            for tag_entry in item_tags:
+                tag_name = tag_entry.get('tag', '')
+                if tag_name:
+                    tag_counts[tag_name] = tag_counts.get(tag_name, 0) + 1
+
+        result = [{'tag': tag, 'count': count} for tag, count in tag_counts.items()]
         return sorted(result, key=lambda x: (-x['count'], x['tag'].lower()))
     except HTTPError as e:
         print(f"ERROR: Failed to list tags: {e}")

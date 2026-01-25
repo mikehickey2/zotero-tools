@@ -1,0 +1,6 @@
+# Core dependencies
+pyzotero>=1.5.0
+python-dotenv>=1.0.0
+
+# Optional: for YAML frontmatter parsing in zotero_vault_sync.py
+# pyyaml>=6.0

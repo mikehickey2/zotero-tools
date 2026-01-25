@@ -18,9 +18,8 @@ env/
 *.swp
 *.swo
 
-# Claude Code
+# Claude Code internal files
 .claude/
-CLAUDE.md
 
 # OS files
 .DS_Store
@@ -37,3 +36,6 @@ Desktop.ini
 
 # Generated data output
 uncat_sources.json
+
+# Temporary files
+.temp/

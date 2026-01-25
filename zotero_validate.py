@@ -12,31 +12,20 @@ Usage:
     python zotero_validate.py
 """
 
-import os
 import random
 import re
 import sys
 
-from dotenv import load_dotenv
 from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError
+
+from zotero_utils import load_credentials
 
 # Validation checks
 BRACE_PATTERN = re.compile(r'\{\{|\}\}')
 TYPOS = ['Flordia', 'Inititative']
 ACRONYMS = ['UAS', 'FAA', 'LLM', 'ASRS', 'NLP', 'BERT', 'GPT', 'ICAO', 'NTSB']
 PROPER_NOUNS = ['SafeAeroBERT', 'Monte-Carlo', 'Firth', 'Bayesian', 'Gaussian', 'Markov', 'Cohen']
-
-
-def load_credentials():
-    load_dotenv()
-    library_id = os.getenv('ZOTERO_LIBRARY_ID')
-    library_type = os.getenv('ZOTERO_LIBRARY_TYPE', 'group')
-    api_key = os.getenv('ZOTERO_API_KEY')
-    if not library_id or not api_key:
-        print("ERROR: Missing ZOTERO_LIBRARY_ID or ZOTERO_API_KEY")
-        sys.exit(1)
-    return library_id, library_type, api_key
 
 
 def check_braces(items):

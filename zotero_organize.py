@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-zotero_organize_article1.py
+zotero_organize.py
 
 Hybrid Zotero tagging script:
 - Reads citation keys from Better BibTeX JSON export
@@ -10,8 +10,8 @@ Requirements:
     pip install pyzotero python-dotenv
 
 Usage:
-    python zotero_organize_article1.py --dry-run  # Preview changes
-    python zotero_organize_article1.py            # Apply changes
+    python zotero_organize.py --dry-run  # Preview changes
+    python zotero_organize.py            # Apply changes
 """
 
 import argparse
@@ -24,9 +24,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError, UnsupportedParamsError
+
+from zotero_utils import load_credentials
 
 # Tag mapping: regex patterns matched against citationKey (case-insensitive)
 TAG_MAPPING = {
@@ -227,39 +228,6 @@ class ProcessingStats:
 
     def increment_tag(self, tag: str):
         self.tag_counts[tag] = self.tag_counts.get(tag, 0) + 1
-
-
-def load_credentials() -> tuple[str, str, str]:
-    """
-    Load Zotero credentials from environment variables or .env file.
-
-    Returns:
-        Tuple of (library_id, library_type, api_key)
-
-    Raises:
-        SystemExit: If required credentials are missing
-    """
-    load_dotenv()
-
-    library_id = os.getenv('ZOTERO_LIBRARY_ID')
-    library_type = os.getenv('ZOTERO_LIBRARY_TYPE', 'group')
-    api_key = os.getenv('ZOTERO_API_KEY')
-
-    missing = []
-    if not library_id:
-        missing.append('ZOTERO_LIBRARY_ID')
-    if not api_key:
-        missing.append('ZOTERO_API_KEY')
-
-    if missing:
-        print("ERROR: Missing required environment variables:")
-        for var in missing:
-            print(f"  - {var}")
-        print("\nPlease set these in your environment or create a .env file.")
-        print("See .env.example for the expected format.")
-        sys.exit(1)
-
-    return library_id, library_type, api_key
 
 
 def load_bbt_json(json_path: str) -> list[dict]:
@@ -623,13 +591,15 @@ Environment variables (or .env file):
     # Get JSON path from args or environment
     json_path = args.json_path or os.getenv('BBT_JSON_PATH')
     if not json_path:
-        # Default path
-        json_path = os.path.expanduser('~/Desktop/cUAS_AD.json')
+        print("ERROR: BBT_JSON_PATH not set.")
+        print("Please set via environment variable or use --json flag.")
+        print("See .env.example for configuration details.")
+        sys.exit(1)
 
     if args.verbose:
         print(f"Library ID: {library_id}")
         print(f"Library type: {library_type}")
-        print(f"API key: {'*' * 8}...{api_key[-4:]}")
+        print(f"API key: {'*' * 16} (loaded from environment)")
         print(f"JSON path: {json_path}")
 
     # Load items from BBT JSON

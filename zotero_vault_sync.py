@@ -13,7 +13,6 @@ Usage:
 """
 
 import argparse
-import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -21,9 +20,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError
+
+from zotero_utils import load_credentials
 
 try:
     import yaml
@@ -41,29 +41,6 @@ class SyncStats:
     missing_from_vault: list = field(default_factory=list)
     orphaned_in_vault: list = field(default_factory=list)
     naming_issues: list = field(default_factory=list)
-
-
-def load_credentials() -> tuple[str, str, str]:
-    """Load Zotero credentials from environment."""
-    load_dotenv()
-
-    library_id = os.getenv('ZOTERO_LIBRARY_ID')
-    library_type = os.getenv('ZOTERO_LIBRARY_TYPE', 'group')
-    api_key = os.getenv('ZOTERO_API_KEY')
-
-    missing = []
-    if not library_id:
-        missing.append('ZOTERO_LIBRARY_ID')
-    if not api_key:
-        missing.append('ZOTERO_API_KEY')
-
-    if missing:
-        print("ERROR: Missing required environment variables:")
-        for var in missing:
-            print(f"  - {var}")
-        sys.exit(1)
-
-    return library_id, library_type, api_key
 
 
 def get_zotero_items(zot: zotero.Zotero) -> list[dict]:
