@@ -21,3 +21,19 @@ env/
 # Claude Code
 .claude/
 CLAUDE.md
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Generated data output
+uncat_sources.json
