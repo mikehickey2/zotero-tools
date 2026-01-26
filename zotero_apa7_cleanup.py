@@ -305,7 +305,7 @@ def process_collection(zot, collection_key: str, dry_run: bool = True):
     skipped = 0
 
     for item in items:
-        if item['data'].get('itemType') in ['attachment', 'note']:
+        if item['data'].get('itemType') in ['attachment', 'note', 'annotation']:
             skipped += 1
             continue
 
@@ -377,7 +377,7 @@ def process_library(zot, dry_run: bool = True):
     skipped = 0
 
     for item in items:
-        if item['data'].get('itemType') in ['attachment', 'note']:
+        if item['data'].get('itemType') in ['attachment', 'note', 'annotation']:
             skipped += 1
             continue
 

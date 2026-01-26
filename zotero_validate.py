@@ -94,7 +94,7 @@ def check_proper_nouns(items):
 def spot_check_sentence_case(items, count=10):
     """Randomly sample entries and display for manual review."""
     # Filter to only items with titles
-    titled_items = [i for i in items if i['data'].get('title') and i['data'].get('itemType') not in ['attachment', 'note']]
+    titled_items = [i for i in items if i['data'].get('title') and i['data'].get('itemType') not in ['attachment', 'note', 'annotation']]
 
     if len(titled_items) < count:
         sample = titled_items
@@ -121,7 +121,7 @@ def main():
 
     print("\nFetching all items...")
     items = zot.everything(zot.items())
-    content_items = [i for i in items if i['data'].get('itemType') not in ['attachment', 'note']]
+    content_items = [i for i in items if i['data'].get('itemType') not in ['attachment', 'note', 'annotation']]
     print(f"Found {len(content_items)} content items (excluding attachments/notes)")
 
     all_passed = True

@@ -161,7 +161,12 @@ python zotero_search.py --tag "#MyTag"
 # List all tags or collections
 python zotero_search.py --list-tags
 python zotero_search.py --list-collections
+
+# Include PDF annotations in search results (excluded by default)
+python zotero_search.py --query "LLM" --include-annotations
 ```
+
+> **Note:** PDF annotations (highlights, comments) are excluded from search results by default. Use `--include-annotations` when you want to search your reading notes.
 
 ### Multi-Strategy Search
 
@@ -230,6 +235,7 @@ See `supplementary_tag_mapping.py` for a complete example of tag pattern configu
 - **Rate Limiting**: API calls include delays (0.5-1.0s) to respect Zotero rate limits
 - **Protected Terms**: Configurable lists of terms preserved during case conversion
 - **Regex Tag Mapping**: Flexible pattern matching for automated tagging
+- **Content Item Filtering**: Automatically excludes attachments, notes, and PDF annotations from item counts (annotations can be included via `--include-annotations` flag in search)
 
 ### Rate Limiting
 

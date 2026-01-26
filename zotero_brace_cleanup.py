@@ -97,7 +97,7 @@ Examples:
     skipped = 0
 
     for item in items:
-        if item['data'].get('itemType') in ['attachment', 'note']:
+        if item['data'].get('itemType') in ['attachment', 'note', 'annotation']:
             skipped += 1
             continue
 

@@ -50,7 +50,7 @@ def get_zotero_items(zot: zotero.Zotero) -> list[dict]:
     result = []
     for item in items:
         item_type = item['data'].get('itemType', '')
-        if item_type in ['attachment', 'note']:
+        if item_type in ['attachment', 'note', 'annotation']:
             continue
 
         data = item['data']

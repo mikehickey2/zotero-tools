@@ -14,6 +14,7 @@ Usage:
     python zotero_search.py --tag "#A1-02a-LLM-Aviation"    # Filter by tag
     python zotero_search.py --list-collections              # Show all collections
     python zotero_search.py --format md --output results.md # Export to markdown
+    python zotero_search.py --query "LLM" --include-annotations  # Include PDF highlights
 """
 
 import argparse
@@ -26,6 +27,21 @@ from pyzotero import zotero
 from pyzotero.zotero_errors import HTTPError
 
 from zotero_utils import load_credentials
+
+# Item types to exclude from results (non-citable items)
+EXCLUDED_ITEM_TYPES = {'attachment', 'note', 'annotation'}
+
+
+def filter_content_items(items: list, include_annotations: bool = False) -> list:
+    """Filter out non-content items (attachments, notes, and optionally annotations)."""
+    exclude = {'attachment', 'note'}
+    if not include_annotations:
+        exclude.add('annotation')
+
+    return [
+        item for item in items
+        if item['data'].get('itemType') not in exclude
+    ]
 
 
 def get_collection_key(zot: zotero.Zotero, collection_name: str) -> Optional[str]:
@@ -42,7 +58,7 @@ def format_item_markdown(item: dict) -> str:
     data = item['data']
     item_type = data.get('itemType', 'unknown')
 
-    if item_type in ['attachment', 'note']:
+    if item_type in EXCLUDED_ITEM_TYPES:
         return ""
 
     title = data.get('title', '(no title)')
@@ -92,7 +108,7 @@ def format_item_json(item: dict) -> dict:
     """Format a single item as a simplified dict."""
     data = item['data']
 
-    if data.get('itemType') in ['attachment', 'note']:
+    if data.get('itemType') in ['attachment', 'note', 'annotation']:
         return None
 
     creators = data.get('creators', [])
@@ -118,31 +134,37 @@ def format_item_json(item: dict) -> dict:
     }
 
 
-def search_library(zot: zotero.Zotero, query: str, limit: int = 50) -> list:
+def search_library(zot: zotero.Zotero, query: str, limit: int = 50,
+                   include_annotations: bool = False) -> list:
     """Search library by keyword."""
     try:
         items = zot.items(q=query, limit=limit)
-        return items
+        return filter_content_items(items, include_annotations)
     except HTTPError as e:
         print(f"ERROR: Search failed: {e}")
         return []
 
 
-def get_collection_items(zot: zotero.Zotero, collection_key: str, limit: int = 100) -> list:
+def get_collection_items(zot: zotero.Zotero, collection_key: str, limit: int = 100,
+                         include_annotations: bool = False) -> list:
     """Get all items in a collection."""
     try:
         items = zot.collection_items(collection_key, limit=limit)
-        return items
+        return filter_content_items(items, include_annotations)
     except HTTPError as e:
         print(f"ERROR: Failed to get collection items: {e}")
         return []
 
 
-def get_recent_items(zot: zotero.Zotero, days: int = 7, limit: int = 50) -> list:
+def get_recent_items(zot: zotero.Zotero, days: int = 7, limit: int = 50,
+                     include_annotations: bool = False) -> list:
     """Get items added in the last N days."""
     try:
         # Get all items sorted by date added (descending)
         items = zot.items(sort='dateAdded', direction='desc', limit=limit)
+
+        # Filter out non-content items first
+        items = filter_content_items(items, include_annotations)
 
         # Filter by date
         cutoff = datetime.now() - timedelta(days=days)
@@ -163,11 +185,12 @@ def get_recent_items(zot: zotero.Zotero, days: int = 7, limit: int = 50) -> list
         return []
 
 
-def get_items_by_tag(zot: zotero.Zotero, tag: str, limit: int = 100) -> list:
+def get_items_by_tag(zot: zotero.Zotero, tag: str, limit: int = 100,
+                     include_annotations: bool = False) -> list:
     """Get items with a specific tag."""
     try:
         items = zot.items(tag=tag, limit=limit)
-        return items
+        return filter_content_items(items, include_annotations)
     except HTTPError as e:
         print(f"ERROR: Failed to get items by tag: {e}")
         return []
@@ -275,6 +298,10 @@ Examples:
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Verbose output')
 
+    # Include annotations
+    parser.add_argument('--include-annotations', action='store_true',
+                        help='Include PDF annotations in results (excluded by default)')
+
     args = parser.parse_args()
 
     # Require at least one action
@@ -318,7 +345,8 @@ Examples:
     elif args.query:
         if args.verbose:
             print(f"Searching for: {args.query}")
-        items = search_library(zot, args.query, limit=args.limit)
+        items = search_library(zot, args.query, limit=args.limit,
+                               include_annotations=args.include_annotations)
         if items:
             output_results(items, args.format, args.output)
         else:
@@ -335,7 +363,8 @@ Examples:
 
         if args.verbose:
             print(f"Getting items from collection: {args.collection}")
-        items = get_collection_items(zot, collection_key, limit=args.limit)
+        items = get_collection_items(zot, collection_key, limit=args.limit,
+                                     include_annotations=args.include_annotations)
         if items:
             output_results(items, args.format, args.output)
         else:
@@ -344,7 +373,8 @@ Examples:
     elif args.recent:
         if args.verbose:
             print(f"Getting items added in last {args.recent} days")
-        items = get_recent_items(zot, days=args.recent, limit=args.limit)
+        items = get_recent_items(zot, days=args.recent, limit=args.limit,
+                                 include_annotations=args.include_annotations)
         if items:
             output_results(items, args.format, args.output)
         else:
@@ -353,7 +383,8 @@ Examples:
     elif args.tag:
         if args.verbose:
             print(f"Getting items with tag: {args.tag}")
-        items = get_items_by_tag(zot, args.tag, limit=args.limit)
+        items = get_items_by_tag(zot, args.tag, limit=args.limit,
+                                 include_annotations=args.include_annotations)
         if items:
             output_results(items, args.format, args.output)
         else:

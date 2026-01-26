@@ -48,6 +48,7 @@ python zotero_search.py --recent 7                # Recent items (last 7 days)
 python zotero_search.py --tag "#A1-02a-LLM"       # Filter by tag
 python zotero_search.py --list-tags               # Show all tags
 python zotero_search.py --list-collections        # Show all collections
+python zotero_search.py --query "LLM" --include-annotations  # Include PDF highlights
 
 # Multi-strategy search (combines keyword + tag, deduplicates, ranks)
 python zotero_multi_search.py --query "aviation safety" -v    # Verbose with scores
@@ -89,6 +90,11 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 - `TAG_MAPPING` dict: 60+ regex patterns matched against citation keys
 - Pattern format: `r'^authorname.*(keyword1|keyword2).*'`
 - Tags: `#A1-*` (dissertation) and `#NonDiss-*` (non-dissertation)
+
+**Content Item Filtering** (all scripts):
+- Excludes `attachment`, `note`, and `annotation` item types from counts
+- PDF annotations are Zotero's highlight/comment objects (not citable items)
+- Use `--include-annotations` flag in `zotero_search.py` to search highlights
 
 ### Rate Limiting
 - `zotero_apa7_cleanup.py`: 0.5s delay

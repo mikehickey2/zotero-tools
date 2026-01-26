@@ -89,9 +89,9 @@ def merge_results(item_lists: list[list]) -> dict:
         for item in items:
             key = item.get('key')
             if key and key not in merged:
-                # Skip attachments and notes
+                # Skip attachments, notes, and annotations
                 item_type = item.get('data', {}).get('itemType', '')
-                if item_type not in ['attachment', 'note']:
+                if item_type not in ['attachment', 'note', 'annotation']:
                     merged[key] = item
     return merged
 
