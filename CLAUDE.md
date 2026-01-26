@@ -109,3 +109,57 @@ Credentials via `.env` file (see `.env.example`):
 - `ZOTERO_LIBRARY_TYPE`: 'group' or 'user'
 - `ZOTERO_API_KEY`: API key with read/write access
 - `BBT_JSON_PATH`: Path to Better BibTeX JSON export
+
+## Custom Skills
+
+Project-specific skills are available in `.claude/skills/`:
+
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| `validate` | `/validate` | Run full validation suite (validate.py, APA7 dry-run, brace dry-run) |
+| `cleanup` | `/cleanup` | Guide through complete cleanup workflow with dry-run → apply → validate |
+| `add-term` | `/add-term` | Add new protected terms or phrases to APA7 script |
+| `debug-zotero` | `/debug-zotero` | Debug API errors, incorrect counts, term preservation issues |
+
+## Recommended Agents
+
+| Agent Type | When to Use |
+|------------|-------------|
+| **Explore** | Understanding codebase, finding all instances of a pattern (e.g., `itemType` filtering across files) |
+| **Plan** | Designing new features or major refactors before implementation |
+
+## Recommended Skills (General)
+
+| Skill | When to Use |
+|-------|-------------|
+| `superpowers:systematic-debugging` | Any bug, test failure, or unexpected behavior - trace root cause before fixing |
+| `superpowers:verification-before-completion` | Before claiming work complete - run validation and tests |
+| `superpowers:brainstorming` | Before implementing new features - explore requirements first |
+
+## Future Enhancements
+
+### Testing
+- [ ] Add pytest unit tests for `to_sentence_case()` and `matches_protected_pattern()`
+- [ ] Add integration tests that mock the Zotero API
+- [ ] Create test fixtures with sample library data
+
+### CI/CD
+- [ ] GitHub Actions workflow to run validation on PRs
+- [ ] Automated linting with flake8/black
+- [ ] Pre-commit hooks for code quality
+
+### Code Quality
+- [ ] Centralized `filter_content_items()` helper shared across all scripts
+- [ ] Type hints throughout codebase
+- [ ] Docstring coverage for all public functions
+
+### Features
+- [ ] `--undo` flag to revert last batch of changes
+- [ ] Export validation report to markdown/JSON
+- [ ] Configuration file for custom protected terms (avoid editing source)
+- [ ] Web UI or CLI dashboard for library status
+
+### Documentation
+- [ ] API documentation with Sphinx
+- [ ] Example notebooks for common workflows
+- [ ] Video walkthrough of setup and usage
