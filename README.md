@@ -198,11 +198,22 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 
 ### Protected Terms (APA7 Cleanup)
 
-The APA7 cleanup script preserves certain acronyms and terms. To customize for your research domain, edit the `PROTECTED_TERMS` set in `zotero_apa7_cleanup.py`:
+The APA7 cleanup script uses **pattern-based detection** to automatically preserve:
+
+| Pattern | Examples | Detection Method |
+|---------|----------|------------------|
+| All-caps acronyms (2+ letters) | UAV, UAVs, GA, LLM, BI | Auto-detected |
+| Roman numerals | I, II, III, IV, V, VI, VII, VIII, IX, X | Auto-detected |
+| CamelCase product names | YouTube, iPhone, macOS, PowerBI | Auto-detected |
+| Software/geographic names | Stata, Power, Auckland, Zealand | `PROTECTED_TERMS` list |
+| Multi-word phrases | Monte Carlo, Part 107 | `PROTECTED_PHRASES` list |
+
+**Most acronyms are detected automatically.** Only add terms to `PROTECTED_TERMS` for edge cases that patterns can't catch (e.g., single-word product names like `Stata`):
 
 ```python
 PROTECTED_TERMS = {
-    'FAA', 'NASA', 'LLM', 'BERT',  # Add your acronyms
+    'Stata', 'Power', 'Excel',  # Software names
+    'Auckland', 'Zealand',       # Geographic terms
 }
 ```
 
@@ -233,7 +244,8 @@ See `supplementary_tag_mapping.py` for a complete example of tag pattern configu
 
 - **Dry Run Safety**: All write operations support `--dry-run` mode
 - **Rate Limiting**: API calls include delays (0.5-1.0s) to respect Zotero rate limits
-- **Protected Terms**: Configurable lists of terms preserved during case conversion
+- **Pattern-Based Term Detection**: Automatically preserves acronyms, Roman numerals, and CamelCase without manual configuration
+- **Protected Terms**: Configurable lists for edge cases that patterns can't catch
 - **Regex Tag Mapping**: Flexible pattern matching for automated tagging
 - **Content Item Filtering**: Automatically excludes attachments, notes, and PDF annotations from item counts (annotations can be included via `--include-annotations` flag in search)
 

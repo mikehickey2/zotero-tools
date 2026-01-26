@@ -54,10 +54,15 @@ PROTECTED_TERMS: Set[str] = {
     'Springer', 'Purdue', 'USGS', 'DHS', 'NDAA', 'DoD', 'ProQuest', 'AeroScope',
     'Black', 'Vault',
 
+    # Software/product names (that patterns won't catch)
+    'Stata', 'Power', 'Excel', 'SPSS', 'Tableau',
+
     # Proper nouns - geographic
     'United', 'States', 'U.S.', 'US', 'UK', 'France', 'French', 'Greek',
     'Taiwanese', 'National', 'Federal', 'American', 'European', 'Copenhagen',
     'Oslo', 'Florida', 'Russia', 'Russian', 'X',
+    'South', 'North', 'East', 'West', 'Auckland', 'Zealand', 'Australia',
+    'Australian', 'Canadian', 'China', 'Chinese', 'India', 'Indian',
 
     # Month names (proper nouns)
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -115,6 +120,38 @@ def fix_typos(text: str) -> str:
     return text
 
 
+def matches_protected_pattern(word: str) -> bool:
+    """
+    Check if word matches patterns that should be preserved.
+
+    Patterns detected:
+    - All-caps acronyms (2+ letters): UAV, UAVs, GA, LLM, BI
+    - Roman numerals: I, II, III, IV, V, VI, VII, VIII, IX, X
+    - CamelCase product names: YouTube, PowerBI, iPhone
+    """
+    if not word:
+        return False
+
+    # All-caps acronyms (2+ letters, optionally ending in lowercase 's' for plurals)
+    # e.g., UAV, UAVs, GA, LLM, NLP, BI
+    if re.match(r'^[A-Z]{2,}s?$', word):
+        return True
+
+    # Roman numerals (standalone, up to 4 characters to avoid false positives)
+    # e.g., I, II, III, IV, V, VI, VII, VIII, IX, X, XI, XII
+    if re.match(r'^[IVXLCDM]+$', word) and len(word) <= 4:
+        return True
+
+    # CamelCase / mixed case product names
+    # e.g., YouTube, PowerBI, iPhone, macOS
+    if re.match(r'^[a-z]+[A-Z]', word):  # starts lowercase, has uppercase (iPhone, macOS)
+        return True
+    if re.match(r'^[A-Z][a-z]+[A-Z]', word):  # YouTuBe, PowerBI pattern
+        return True
+
+    return False
+
+
 def is_protected(word: str) -> bool:
     """Check if a word should be protected from lowercasing."""
     # Strip punctuation (including parentheses) for comparison
@@ -122,13 +159,17 @@ def is_protected(word: str) -> bool:
     # Also try without periods for U.S. vs US matching
     clean_word_no_dots = clean_word.replace('.', '')
 
-    # Check exact match
+    # Check pattern-based rules first (acronyms, Roman numerals, CamelCase)
+    if matches_protected_pattern(clean_word):
+        return True
+
+    # Check exact match in PROTECTED_TERMS
     if clean_word in PROTECTED_TERMS:
         return True
     if clean_word_no_dots in PROTECTED_TERMS:
         return True
 
-    # Check case-insensitive match for acronyms (all caps words)
+    # Check case-insensitive match for terms in PROTECTED_TERMS
     if clean_word.upper() in PROTECTED_TERMS:
         return True
     if clean_word_no_dots.upper() in PROTECTED_TERMS:
@@ -146,6 +187,9 @@ def process_compound_word(word: str) -> str:
         result_parts = []
         for part in parts:
             if part in ['-', '/']:
+                result_parts.append(part)
+            elif matches_protected_pattern(part):
+                # Pattern match (acronym, Roman numeral, CamelCase) - preserve original
                 result_parts.append(part)
             elif part.upper() in PROTECTED_TERMS or part in PROTECTED_TERMS:
                 # Find the correct casing from PROTECTED_TERMS
@@ -178,7 +222,11 @@ def get_protected_form(word: str) -> str:
         punct_after = word[j] + punct_after
         j -= 1
 
-    # Find matching protected term
+    # If matches a pattern (acronym, Roman numeral, CamelCase), preserve original case
+    if matches_protected_pattern(clean_word):
+        return word  # Keep original exactly
+
+    # Find matching protected term in PROTECTED_TERMS
     for term in PROTECTED_TERMS:
         if clean_word.lower() == term.lower():
             # Exact match including dots - use term's casing from PROTECTED_TERMS

@@ -78,7 +78,8 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 ### Key Design Patterns
 
 **Protected Terms System** (`zotero_apa7_cleanup.py`):
-- `PROTECTED_TERMS` set: Single words preserved (FAA, LLM, BERT, etc.)
+- `matches_protected_pattern()`: Auto-detects acronyms (2+ caps), Roman numerals, CamelCase
+- `PROTECTED_TERMS` set: Edge cases patterns miss (Stata, Power, Auckland, etc.)
 - `PROTECTED_PHRASES` list: Multi-word phrases (Part 107, Monte Carlo, etc.)
 - `TYPO_CORRECTIONS` dict: Known typos auto-corrected
 
