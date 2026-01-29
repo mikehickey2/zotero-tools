@@ -39,6 +39,15 @@ def load_carol_json(json_path: str) -> list[dict]:
     return [data]
 
 
+def get_collection_key(zot: zotero.Zotero, collection_name: str) -> str | None:
+    """Find collection key by name (case-insensitive)."""
+    collections = zot.collections()
+    for coll in collections:
+        if coll['data'].get('name', '').lower() == collection_name.lower():
+            return coll['key']
+    return None
+
+
 def carol_to_zotero(case: dict) -> dict:
     """Convert NTSB CAROL case to Zotero report template."""
     # Extract key fields
@@ -129,7 +138,65 @@ def main():
         print(f"\n[DRY RUN] Would create {len(zotero_items)} item(s)")
         return
 
-    print("\nItem creation not yet implemented")
+    # Connect to Zotero API
+    library_id, library_type, api_key = load_credentials()
+
+    if args.verbose:
+        print(f"\nConnecting to Zotero ({library_type} library: {library_id})...")
+
+    try:
+        zot = zotero.Zotero(library_id, library_type, api_key)
+        zot.key_info()
+    except HTTPError as e:
+        print(f"ERROR: Failed to connect to Zotero API: {e}")
+        sys.exit(1)
+
+    # Resolve collection if specified
+    collection_key = None
+    if args.collection:
+        collection_key = get_collection_key(zot, args.collection)
+        if not collection_key:
+            print(f"ERROR: Collection '{args.collection}' not found")
+            # List available collections
+            print("\nAvailable collections:")
+            for c in zot.collections():
+                print(f"  - {c['data']['name']}")
+            sys.exit(1)
+        if args.verbose:
+            print(f"Target collection: {args.collection} (key: {collection_key})")
+
+    # Create items via API
+    print(f"\nCreating {len(zotero_items)} item(s)...")
+
+    for item in zotero_items:
+        try:
+            # Get fresh template and merge our data
+            template = zot.item_template('report')
+            for key, value in item.items():
+                if key in template:
+                    template[key] = value
+
+            # Create item
+            resp = zot.create_items([template])
+
+            if resp.get('success'):
+                item_key = list(resp['success'].values())[0]
+                print(f"  Created: {item['reportNumber']} -> {item_key}")
+
+                # Add to collection if specified
+                if collection_key:
+                    created_item = zot.item(item_key)
+                    zot.addto_collection(collection_key, created_item)
+                    print(f"    Added to collection: {args.collection}")
+            else:
+                print(f"  FAILED: {item['reportNumber']}")
+                if resp.get('failed'):
+                    print(f"    Error: {resp['failed']}")
+
+        except HTTPError as e:
+            print(f"  ERROR creating {item['reportNumber']}: {e}")
+
+    print("\nDone!")
 
 
 if __name__ == '__main__':
