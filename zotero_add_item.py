@@ -48,6 +48,26 @@ def get_collection_key(zot: zotero.Zotero, collection_name: str) -> str | None:
     return None
 
 
+def check_duplicate(zot: zotero.Zotero, report_number: str, title: str) -> str | None:
+    """Check if an item with this report number already exists. Returns item key if found."""
+    try:
+        # Search by title keywords since URL/reportNumber may not be indexed
+        # Use distinctive parts of the title for matching
+        search_terms = title[:80]  # First part of title is usually unique
+        items = zot.items(q=search_terms, limit=10)
+        for item in items:
+            data = item['data']
+            # Check if URL contains the report number (our items always have this)
+            if report_number in data.get('url', ''):
+                return item['key']
+            # Also check reportNumber field
+            if data.get('reportNumber') == report_number:
+                return item['key']
+    except HTTPError:
+        pass
+    return None
+
+
 def carol_to_zotero(case: dict) -> dict:
     """Convert NTSB CAROL case to Zotero report template."""
     # Extract key fields
@@ -170,6 +190,12 @@ def main():
 
     for item in zotero_items:
         try:
+            # Check for duplicates
+            existing_key = check_duplicate(zot, item['reportNumber'], item['title'])
+            if existing_key:
+                print(f"  SKIP (duplicate): {item['reportNumber']} already exists as {existing_key}")
+                continue
+
             # Get fresh template and merge our data
             template = zot.item_template('report')
             for key, value in item.items():
