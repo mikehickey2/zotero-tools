@@ -45,6 +45,7 @@ PROTECTED_TERMS: Set[str] = {
 
     # Proper nouns - systems/methods
     'SafeAeroBERT', 'AviationGPT', 'ChatGPT', 'Claude', 'Zotero',
+    'NASP-T', 'LogSyn', 'LeRAAT', 'LERCause',
     'Loess', 'Monte-Carlo', 'Monte', 'Carlo', 'Jeffreys', 'Poisson',
     'Cohen', 'Granger', 'Bayesian', 'Boolean', 'Gaussian', 'Markov',
     'Firth', 'Lasso', 'Gordian', 'Johnny', 'Cox',
@@ -52,7 +53,7 @@ PROTECTED_TERMS: Set[str] = {
     # Proper nouns - organizations
     'NASA', 'MITRE', 'IEEE', 'ACM', 'AIAA', 'SAE', 'Routledge', 'Elsevier',
     'Springer', 'Purdue', 'USGS', 'DHS', 'NDAA', 'DoD', 'ProQuest', 'AeroScope',
-    'Black', 'Vault',
+    'Black', 'Vault', 'Bombardier', 'Canadair', 'Inc',
 
     # Software/product names (that patterns won't catch)
     'Stata', 'Power', 'Excel', 'SPSS', 'Tableau',
@@ -63,6 +64,7 @@ PROTECTED_TERMS: Set[str] = {
     'Oslo', 'Florida', 'Russia', 'Russian', 'X',
     'South', 'North', 'East', 'West', 'Auckland', 'Zealand', 'Australia',
     'Australian', 'Canadian', 'China', 'Chinese', 'India', 'Indian',
+    'Los', 'Angeles', 'CA', 'Frankfurt',
 
     # Month names (proper nouns)
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -86,6 +88,8 @@ PROTECTED_PHRASES = [
     'Aviation Safety Reporting System',
     'CoNLL-2003',
     'X Files',
+    'Los Angeles',
+    'Bombardier Inc',
 ]
 
 TYPO_CORRECTIONS = {
@@ -281,8 +285,8 @@ def to_sentence_case(title: str) -> str:
     capitalize_next = True
 
     for i, word in enumerate(words):
-        # Check if this word ends with colon or em-dash
-        ends_with_colon = word.endswith(':') or word.endswith('—') or word.endswith('–')
+        # Check if this word ends with colon, em-dash, or question mark (capitalize next word)
+        ends_with_colon = word.endswith(':') or word.endswith('—') or word.endswith('–') or word.endswith('?')
 
         # Get the word without trailing punctuation for checking
         word_base = word.rstrip(':—–,;.!?')
