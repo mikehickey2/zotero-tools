@@ -7,6 +7,8 @@ A Python toolkit for automating Zotero library management, citation formatting, 
 - **APA7 Title Formatting**: Convert titles to sentence case while preserving acronyms and proper nouns
 - **BibTeX Cleanup**: Remove `{{ }}` brace artifacts from Better BibTeX exports and fix common typos
 - **Automated Tagging**: Apply tags to items based on citation key patterns using regex matching
+- **Tag Migration**: Migrate tags between schemas using JSON mapping files with rollback safety
+- **Collection Management**: Create collection hierarchies and move items between collections
 - **Library Validation**: Run quality checks on your library for formatting consistency
 - **Powerful Search**: Multi-strategy search with keyword, tag, collection, and recency filters
 - **Obsidian Integration**: Sync Zotero items with your Obsidian vault for literature notes
@@ -75,6 +77,8 @@ BBT_JSON_PATH=/path/to/your/export.json
 | `zotero_apa7_cleanup.py` | Convert titles to APA7 sentence case | Yes |
 | `zotero_brace_cleanup.py` | Remove BibTeX braces, fix typos | Yes |
 | `zotero_organize.py` | Auto-tag items by citation key patterns | Yes |
+| `zotero_tag_migrate.py` | Migrate tags between schemas via JSON mapping | Yes |
+| `zotero_collection_migrate.py` | Create collections and move items | Yes |
 | `zotero_validate.py` | Validate library formatting | No |
 | `zotero_search.py` | Search library, browse collections | No |
 | `zotero_multi_search.py` | Multi-strategy search with ranking | No |
@@ -186,6 +190,85 @@ python zotero_multi_search.py --query "prompt" --format json
 python zotero_multi_search.py --query "safety" --limit 10
 ```
 
+### Tag Migration
+
+Migrate tags between schemas using a JSON mapping file. Removes old tags and adds new ones in a single pass, preserving all unmapped tags:
+
+```bash
+# Create a migration map (JSON)
+cat > migration.json << 'EOF'
+{
+  "mappings": [
+    {"old_tag": "#A1-01a-Prior", "new_tags": ["#Sec-LitReview"]},
+    {"old_tag": "#A1-02b-LLM-Methods", "new_tags": ["#Sec-Methods", "#RQ1"]}
+  ],
+  "delete_patterns": ["#NonDiss-*", "cs\\..*"]
+}
+EOF
+
+# Preview changes (always do this first)
+python zotero_tag_migrate.py --map migration.json --dry-run
+
+# Migrate tags in a specific collection
+python zotero_tag_migrate.py --map migration.json --collection "Methods" --dry-run
+
+# Apply with audit log
+python zotero_tag_migrate.py --map migration.json --audit-log changes.json
+
+# Delete tags matching a pattern (in addition to map patterns)
+python zotero_tag_migrate.py --map migration.json --delete-pattern "#Old-*" --dry-run
+
+# Migrate specific items by key
+python zotero_tag_migrate.py --map migration.json --items ABC123 DEF456 --dry-run
+```
+
+### Collection Management
+
+Create collection hierarchies and move items between collections with copy-then-remove safety:
+
+```bash
+# Create a collection spec (JSON)
+cat > collections.json << 'EOF'
+[
+  {"name": "00-Inbox"},
+  {"name": "01-Alerts"},
+  {
+    "name": "04-Literature-Review",
+    "children": [
+      {"name": "Prior-Studies"},
+      {"name": "LLM-Applications"}
+    ]
+  }
+]
+EOF
+
+# Preview collection creation
+python zotero_collection_migrate.py --create-collections collections.json --dry-run
+
+# Create collections
+python zotero_collection_migrate.py --create-collections collections.json
+
+# Create a move mapping (JSON)
+cat > moves.json << 'EOF'
+[
+  {
+    "item_key": "ABC12345",
+    "from_collection": "OLD_KEY",
+    "to_collection": "NEW_KEY",
+    "title": "Optional label"
+  }
+]
+EOF
+
+# Preview item moves
+python zotero_collection_migrate.py --move-items moves.json --dry-run
+
+# Move items with verification (default)
+python zotero_collection_migrate.py --move-items moves.json --verify
+```
+
+> **Safety:** Item moves use a copy-then-remove pattern. Items are added to the new collection first, verified to be present, then removed from the old collection. If verification fails, the item stays in the old collection.
+
 ### Obsidian Vault Sync
 
 Sync Zotero items to Obsidian literature notes:
@@ -247,6 +330,8 @@ See `supplementary_tag_mapping.py` for a complete example of tag pattern configu
 - **Pattern-Based Term Detection**: Automatically preserves acronyms, Roman numerals, and CamelCase without manual configuration
 - **Protected Terms**: Configurable lists for edge cases that patterns can't catch
 - **Regex Tag Mapping**: Flexible pattern matching for automated tagging
+- **JSON-Driven Migration**: Externalized tag mappings and collection specs for version control and review
+- **Copy-Then-Remove Safety**: Item collection moves verify placement before removing from source
 - **Content Item Filtering**: Automatically excludes attachments, notes, and PDF annotations from item counts (annotations can be included via `--include-annotations` flag in search)
 
 ### Rate Limiting
@@ -255,6 +340,8 @@ Scripts include built-in delays to avoid hitting Zotero API rate limits:
 - APA7 cleanup: 0.5s between updates
 - Brace cleanup: 0.5s between updates
 - Auto-tagging: 1.0s between updates
+- Tag migration: 1.0s between updates (configurable via `--rate-limit`)
+- Collection migration: 0.5s between operations
 
 ## Troubleshooting
 
