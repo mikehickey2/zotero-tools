@@ -40,15 +40,21 @@ PROTECTED_TERMS: Set[str] = {
     'VAR', 'IRF', 'ROUGE', 'KIE', 'APE', 'EDA', 'QLoRA', 'LoRA', 'CoNLL',
     'HD-D', 'vocd-D', 'lda2vec', 'LDA', 'NMF', 'KPI', 'KPIs', 'VGI', 'R',
 
-    # Model names
+    # Model names / statistical abbreviations with digits
     'T5', 'GPT-3', 'GPT-4', 'BERT', 'RoBERTa', 'GPT-NER', '3D',
+    'AC1', 'AC2', 'F1',
 
     # Proper nouns - systems/methods
     'SafeAeroBERT', 'AviationGPT', 'ChatGPT', 'Claude', 'Zotero',
     'NASP-T', 'LogSyn', 'LeRAAT', 'LERCause',
     'Loess', 'Monte-Carlo', 'Monte', 'Carlo', 'Jeffreys', 'Poisson',
-    'Cohen', 'Granger', 'Bayesian', 'Boolean', 'Gaussian', 'Markov',
+    'Cohen', 'Gwet', 'Granger', 'Bayesian', 'Boolean', 'Gaussian', 'Markov',
     'Firth', 'Lasso', 'Gordian', 'Johnny', 'Cox',
+    # Eponymous statistical tests/measures (possessives handled by is_protected)
+    'Mann', 'Kendall', 'Kruskal', 'Wallis', 'Shapiro', 'Wilk',
+    'Fleiss', 'Krippendorff', 'Cronbach', 'Bonferroni', 'Tukey',
+    'Fisher', 'Pearson', 'Spearman', 'Wilcoxon', 'Likert', 'Sen',
+    'Kaplan', 'Meier', 'Welch', 'Levene', 'Kolmogorov', 'Smirnov',
 
     # Proper nouns - organizations
     'NASA', 'MITRE', 'IEEE', 'ACM', 'AIAA', 'SAE', 'Routledge', 'Elsevier',
@@ -56,10 +62,11 @@ PROTECTED_TERMS: Set[str] = {
     'Black', 'Vault', 'Bombardier', 'Canadair', 'Inc',
 
     # Software/product names (that patterns won't catch)
-    'Stata', 'Power', 'Excel', 'SPSS', 'Tableau',
+    'Stata', 'Power', 'Excel', 'SPSS', 'Tableau', 'tscount',
 
-    # Proper nouns - geographic
+    # Proper nouns - geographic/demonyms
     'United', 'States', 'U.S.', 'US', 'UK', 'France', 'French', 'Greek',
+    'Korean', 'Japanese', 'German',
     'Taiwanese', 'National', 'Federal', 'American', 'European', 'Copenhagen',
     'Oslo', 'Florida', 'Russia', 'Russian', 'X',
     'South', 'North', 'East', 'West', 'Auckland', 'Zealand', 'Australia',
@@ -162,22 +169,22 @@ def is_protected(word: str) -> bool:
     clean_word = re.sub(r'[^\w\-/.]', '', word)
     # Also try without periods for U.S. vs US matching
     clean_word_no_dots = clean_word.replace('.', '')
+    # Strip possessive suffix: "Cohens" -> "Cohen", "Gwets" -> "Gwet"
+    clean_word_base = re.sub(r's$', '', clean_word) if clean_word.endswith('s') else clean_word
 
     # Check pattern-based rules first (acronyms, Roman numerals, CamelCase)
     if matches_protected_pattern(clean_word):
         return True
 
-    # Check exact match in PROTECTED_TERMS
-    if clean_word in PROTECTED_TERMS:
-        return True
-    if clean_word_no_dots in PROTECTED_TERMS:
-        return True
+    # Check exact match in PROTECTED_TERMS (word, without dots, or base form)
+    for candidate in (clean_word, clean_word_no_dots, clean_word_base):
+        if candidate in PROTECTED_TERMS:
+            return True
 
     # Check case-insensitive match for terms in PROTECTED_TERMS
-    if clean_word.upper() in PROTECTED_TERMS:
-        return True
-    if clean_word_no_dots.upper() in PROTECTED_TERMS:
-        return True
+    for candidate in (clean_word, clean_word_no_dots, clean_word_base):
+        if candidate.upper() in PROTECTED_TERMS:
+            return True
 
     return False
 

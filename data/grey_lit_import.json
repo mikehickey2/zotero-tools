@@ -1,0 +1,130 @@
+[
+  {
+    "itemType": "report",
+    "title": "Small unmanned aircraft systems: FAA should improve its management of safety risks",
+    "creators": [
+      {"creatorType": "author", "name": "Government Accountability Office"}
+    ],
+    "date": "2018-05-24",
+    "reportNumber": "GAO-18-110",
+    "institution": "Government Accountability Office",
+    "place": "Washington, DC",
+    "url": "https://www.gao.gov/products/gao-18-110",
+    "abstractNote": "GAO found that FAA's information on the extent of unsafe use of small UAS is limited. FAA officials told GAO that FAA cannot verify that small UAS were involved in most of the over 6,000 sightings reported since 2014, because small UAS are often difficult for pilots to identify definitively and typically are not picked up by radar.",
+    "extra": "Report Type: GAO Report\nRequested by: Senate Committee on Commerce, Science and Transportation; House Committee on Transportation and Infrastructure"
+  },
+  {
+    "itemType": "report",
+    "title": "FAA faces significant barriers to safely integrate unmanned aircraft systems into the national airspace system",
+    "creators": [
+      {"creatorType": "author", "name": "Department of Transportation Office of Inspector General"}
+    ],
+    "date": "2014-06-26",
+    "reportNumber": "AV-2014-061",
+    "institution": "Department of Transportation Office of Inspector General",
+    "place": "Washington, DC",
+    "url": "https://www.oig.dot.gov/sites/default/files/FAA%20Oversight%20of%20Unmanned%20Aircraft%20Systems%5E6-26-14.pdf",
+    "abstractNote": "OIG found that FAA was not effectively collecting and analyzing UAS safety data. While FAA had completed more than half of the UAS milestones in the FAA Modernization and Reform Act of 2012, it was behind on remaining requirements and would not meet the act's goal of achieving safe UAS integration by September 2015.",
+    "extra": "Report Type: OIG Audit Report\nAuthored by: Matthew E. Hampton, Assistant Inspector General for Aviation Audits"
+  },
+  {
+    "itemType": "report",
+    "title": "Unmanned aircraft systems: FAA's compliance and enforcement approach for drones could benefit from improved communication and data",
+    "creators": [
+      {"creatorType": "author", "name": "Government Accountability Office"}
+    ],
+    "date": "2019-10-17",
+    "reportNumber": "GAO-20-29",
+    "institution": "Government Accountability Office",
+    "place": "Washington, DC",
+    "url": "https://www.gao.gov/products/gao-20-29",
+    "abstractNote": "GAO found that FAA has not fully analyzed existing UAS safety data to identify trends in UAS incidents, and officials acknowledge these data have limitations—for example, UAS data entries cannot be easily identified in FAA's Program Tracking and Reporting Subsystem (PTRS). FAA does not currently have plans to determine what existing or new data could help inform whether its oversight efforts are working as intended.",
+    "extra": "Report Type: GAO Report"
+  },
+  {
+    "itemType": "report",
+    "title": "While FAA is coordinating with other agencies on counter-UAS, delays in testing detection and mitigation systems could impact aviation safety",
+    "creators": [
+      {"creatorType": "author", "name": "Department of Transportation Office of Inspector General"}
+    ],
+    "date": "2022-03-30",
+    "reportNumber": "AV-2022-026",
+    "institution": "Department of Transportation Office of Inspector General",
+    "place": "Washington, DC",
+    "url": "https://www.oig.dot.gov/library-item/38892",
+    "abstractNote": "OIG found that FAA was receiving more than 100 UAS sighting reports near airports each month. As a result of testing delays, FAA will not have Phase One counter-UAS testing results until at least 2024, which could delay the potential safety benefits of C-UAS detection and mitigation systems.",
+    "extra": "Report Type: OIG Audit Report\nProject ID: AV2022026\nRecommendations: 3"
+  },
+  {
+    "itemType": "report",
+    "title": "Unmanned aircraft operations in domestic airspace: U.S. policy perspectives and the regulatory landscape",
+    "creators": [
+      {"creatorType": "author", "firstName": "Bart", "lastName": "Elias"}
+    ],
+    "date": "2016-01-27",
+    "reportNumber": "R44352",
+    "institution": "Congressional Research Service",
+    "place": "Washington, DC",
+    "url": "https://www.everycrsreport.com/reports/R44352.html",
+    "abstractNote": "CRS report examining U.S. policy perspectives on integrating UAS operations into domestic airspace, including FAA's regulatory framework, the FAA Modernization and Reform Act of 2012 requirements, Section 333 exemptions for small commercial drones, and privacy and security considerations.",
+    "extra": "Report Type: CRS Report"
+  },
+  {
+    "itemType": "newspaperArticle",
+    "title": "Near-collisions between drones, airliners surge, new FAA reports show",
+    "creators": [
+      {"creatorType": "author", "firstName": "Craig", "lastName": "Whitlock"}
+    ],
+    "date": "2014-11-26",
+    "publicationTitle": "The Washington Post",
+    "section": "National Security",
+    "url": "https://www.washingtonpost.com/world/national-security/near-collisions-between-drones-airliners-surge-new-faa-reports-show/2014/11/26/9a8c1716-758c-11e4-bd1b-03009bd3e984_story.html",
+    "abstractNote": "FOIA-obtained FAA data revealed that since June 2014, commercial airlines, private pilots, and air-traffic controllers reported 25 episodes in which small drones came within a few seconds or a few feet of crashing into much larger aircraft. This reporting forced public disclosure of sighting data FAA had not voluntarily released."
+  },
+  {
+    "itemType": "webpage",
+    "title": "AMA responds to the FAA's drone sighting report",
+    "creators": [
+      {"creatorType": "author", "name": "Academy of Model Aeronautics"}
+    ],
+    "date": "2015-09-14",
+    "websiteTitle": "AMA in Action",
+    "url": "https://amablog.modelaircraft.org/amagov/2015/09/14/ama-responds-to-the-faas-drone-sighting-report/",
+    "abstractNote": "AMA's analysis of 764 FAA drone sighting records found only 27 (3.5%) were identified as near mid-air collisions, with nearly all involving government-authorized military drones. AMA argued the FAA's press release used misleading language and painted an inaccurate picture of UAS safety risk."
+  },
+  {
+    "itemType": "webpage",
+    "title": "FAA more accurately characterizes drone sightings, but more analysis needed",
+    "creators": [
+      {"creatorType": "author", "name": "Academy of Model Aeronautics"}
+    ],
+    "date": "2016-03-25",
+    "websiteTitle": "AMA in Action",
+    "url": "https://amablog.modelaircraft.org/amagov/2016/03/25/faa-more-accurately-characterizes-drone-sightings/",
+    "abstractNote": "AMA's follow-up analysis noting the FAA had begun more accurately characterizing drone sightings in its reporting, though additional analysis of sighting data was still needed to distinguish genuine safety events from routine sightings."
+  },
+  {
+    "itemType": "webpage",
+    "title": "Updated analysis of FAA drone data shows decline in UAS sightings",
+    "creators": [
+      {"creatorType": "author", "name": "Academy of Model Aeronautics"}
+    ],
+    "date": "2016-06-06",
+    "websiteTitle": "AMA in Action",
+    "url": "https://amablog.modelaircraft.org/amagov/2016/06/06/updated-analysis-of-faa-drone-data-shows-decline-in-uas-sightings/",
+    "abstractNote": "AMA's updated analysis showed a month-by-month decline in UAS sightings since peaking in August 2015, despite 700,000 to one million new devices sold. Near misses and close calls remained at approximately 3.3% of all reports. FAA had not verified any collision between a civil aircraft and a civil drone."
+  },
+  {
+    "itemType": "report",
+    "title": "UAS sightings report: Executive summary",
+    "creators": [
+      {"creatorType": "author", "name": "Unmanned Aircraft Safety Team"}
+    ],
+    "date": "2018-01",
+    "reportNumber": "UAST-2018-01",
+    "institution": "Unmanned Aircraft Safety Team",
+    "url": "https://www.aopa.org/news-and-media/all-news/2018/january/08/drone-spotting",
+    "abstractNote": "The UAST Drone Sightings Working Group analyzed 3,417 sighting reports published by the FAA from August 2015 through March 2017. The group concluded that the data set is 'too inconsistent and unstandardized to extract concrete conclusions.' Among findings: 16% of sightings were within 500 feet of manned aircraft, 3.3% resulted in evasive action, and 70.4% were above 400 feet.",
+    "extra": "Note: Original PDF was hosted at unmannedaircraftsafetyteam.org (site no longer active). AOPA coverage linked as primary URL. Co-chairs: Ben Marcus (AirMap) and Earl Lawrence (FAA UAS Integration Office)."
+  }
+]
