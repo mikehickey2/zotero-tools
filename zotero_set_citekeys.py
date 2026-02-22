@@ -26,6 +26,8 @@ CITEKEY_MAP = {
     "ZKBZEJ7S": "amaAnalysis2016a",
     "56KF3TCQ": "amaAnalysis2016b",
     "I4SM8TVZ": "uastSightings2018",
+    "GZ2IKU58": "faaUASLostLink2016",
+    "TBSBBMR5": "faaAirTrafficControl2016",
 }
 
 
