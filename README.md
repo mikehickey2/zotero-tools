@@ -319,7 +319,7 @@ TAG_MAPPING = {
 }
 ```
 
-See `supplementary_tag_mapping.py` for a complete example of tag pattern configuration.
+See `zotero_tag_patterns.py` for a complete example of tag pattern configuration.
 
 ## Architecture
 

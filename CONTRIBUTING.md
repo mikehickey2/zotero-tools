@@ -25,6 +25,23 @@ For API-related issues, please confirm:
 3. **Follow existing code style** - match the patterns in existing scripts
 4. **Update documentation** if adding new features or flags
 
+### File Naming Convention
+
+All Python scripts follow the pattern: **`zotero_[qualifier_]<action_or_role>.py`**
+
+| Component | Required | Description | Examples |
+|-----------|----------|-------------|----------|
+| `zotero_` | Yes | Project prefix — all scripts start with this | — |
+| `qualifier_` | Optional | Narrows scope when action alone is ambiguous | `apa7_`, `brace_`, `multi_`, `tag_`, `collection_`, `vault_` |
+| `<action_or_role>` | Yes | What the script does (verb) or its role (noun) | `cleanup`, `search`, `migrate`, `utils`, `tag_patterns` |
+
+Rules:
+- Use snake_case throughout
+- Prefer action verbs for executable scripts (`validate`, `search`, `migrate`)
+- Use nouns for non-executable modules (`utils`, `tag_patterns`)
+- Singular nouns for single-item operations (`add_item`), plural for batch (`import_items`)
+- Keep names under 30 characters (excluding `.py`)
+
 ### Code Style
 
 - Use descriptive variable names

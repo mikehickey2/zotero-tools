@@ -73,7 +73,7 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 | `zotero_search.py` | Search library, browse collections, recent items |
 | `zotero_multi_search.py` | Multi-strategy search with dedup & ranking |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian vault |
-| `supplementary_tag_mapping.py` | Reference for all tag patterns |
+| `zotero_tag_patterns.py` | Reference for all tag regex patterns |
 
 ### Key Design Patterns
 
@@ -91,6 +91,12 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 - `TAG_MAPPING` dict: 60+ regex patterns matched against citation keys
 - Pattern format: `r'^authorname.*(keyword1|keyword2).*'`
 - Tags: `#A1-*` (dissertation) and `#NonDiss-*` (non-dissertation)
+
+**Naming Convention** (all scripts):
+- Pattern: `zotero_[qualifier_]<action_or_role>.py`
+- All scripts must start with `zotero_` prefix
+- Action verbs for executables, nouns for modules
+- See CONTRIBUTING.md for full specification
 
 **Content Item Filtering** (all scripts):
 - Excludes `attachment`, `note`, and `annotation` item types from counts

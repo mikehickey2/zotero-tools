@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-inbox_metadata_fix.py — One-time APA 7 metadata corrections for 00-Inbox items.
+zotero_inbox_fix.py — One-time APA 7 metadata corrections for 00-Inbox items.
 
 Fixes titles (sentence case), author formatting, missing fields, and
 publisher normalization for 13 items imported 2026-02-12.
 
 Usage:
-    python inbox_metadata_fix.py --dry-run     # Preview all changes
-    python inbox_metadata_fix.py               # Apply changes
+    python zotero_inbox_fix.py --dry-run     # Preview all changes
+    python zotero_inbox_fix.py               # Apply changes
 """
 
 import argparse

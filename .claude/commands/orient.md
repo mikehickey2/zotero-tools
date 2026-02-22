@@ -62,8 +62,8 @@ Read `CONTRIBUTING.md` only if this session involves creating commits or pull re
 | Script | Purpose |
 |--------|---------|
 | `zotero_utils.py` | Shared credential loading (`load_credentials()`) |
-| `supplementary_tag_mapping.py` | Reference for all tag regex patterns |
-| `inbox_metadata_fix.py` | One-time metadata corrections for inbox items |
+| `zotero_tag_patterns.py` | Reference for all tag regex patterns |
+| `zotero_inbox_fix.py` | One-time metadata corrections for inbox items |
 
 ### Discover New Scripts
 
