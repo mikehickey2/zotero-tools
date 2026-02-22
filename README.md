@@ -82,6 +82,7 @@ BBT_JSON_PATH=/path/to/your/export.json
 | `zotero_validate.py` | Validate library formatting | No |
 | `zotero_search.py` | Search library, browse collections | No |
 | `zotero_multi_search.py` | Multi-strategy search with ranking | No |
+| `zotero_set_citekeys.py` | Set custom citation keys (Zotero 8 native field) | Yes |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian | Creates files |
 
 ## Usage
@@ -136,6 +137,31 @@ python zotero_organize.py --show-keys
 # Apply tags
 python zotero_organize.py
 ```
+
+### Custom Citation Keys
+
+Set short, readable citation keys for items with unwieldy auto-generated keys (common with grey literature, government reports, and organizational authors):
+
+```bash
+# Preview changes
+python zotero_set_citekeys.py --dry-run
+
+# Apply changes
+python zotero_set_citekeys.py
+```
+
+Edit `CITEKEY_MAP` in the script to define Zotero item key → desired citation key mappings:
+
+```python
+CITEKEY_MAP = {
+    "F7I5EVPU": "oigFAABarriers2014",   # was: departmentoftransportation...
+    "E4ZU4ZWE": "gaoSmallUAS2018",       # was: governmentaccountability...
+}
+```
+
+The script also cleans up legacy `Citation Key:` lines from the Extra field (see Zotero 8 migration notes below).
+
+> **Important:** After running, open Zotero and wait for sync. BBT will re-export `references.bib` on idle. Verify with `grep` before rendering.
 
 ### Library Validation
 
@@ -342,6 +368,54 @@ Scripts include built-in delays to avoid hitting Zotero API rate limits:
 - Auto-tagging: 1.0s between updates
 - Tag migration: 1.0s between updates (configurable via `--rate-limit`)
 - Collection migration: 0.5s between operations
+
+## Zotero 8 and Better BibTeX: Citation Key Changes
+
+Zotero 8 introduced a **native citation key field** on items, replacing Better BibTeX's proprietary storage. This is a breaking change that affects how custom citation keys are set and read.
+
+### What Changed
+
+| Aspect | Zotero 7 + BBT | Zotero 8 + BBT |
+|--------|----------------|-----------------|
+| Key storage | BBT internal database | Zotero native `citationKey` field |
+| Custom key method | Add `Citation Key: mykey` to Extra field | Set the Citation Key field in item info pane (or `citationKey` via API) |
+| Pinning | Explicit pin/unpin distinction | All keys are always "pinned" |
+| Sync | BBT-only (local) | Syncs natively through Zotero |
+| UI location | Top of item pane | Middle of item pane (may require scrolling) |
+
+### Migration
+
+When you upgrade to Zotero 8, BBT will migrate existing keys from its internal storage to the native field. However:
+
+- If you set custom keys via `Citation Key:` in the Extra field **after** migration, Zotero 8 ignores them. BBT reads from the native field, not Extra.
+- The `zotero_set_citekeys.py` script handles this correctly by setting `item['data']['citationKey']` directly via the Zotero API and cleaning up stale Extra field entries.
+
+### How to Verify
+
+Check which field BBT is using for a specific item:
+
+```python
+from pyzotero import zotero
+zot = zotero.Zotero(library_id, library_type, api_key)
+item = zot.item('YOUR_ITEM_KEY')
+print(f"Native field: {item['data'].get('citationKey', '')}")
+print(f"Extra field: {item['data'].get('extra', '')}")
+```
+
+If the native `citationKey` field has the old auto-generated key and Extra has your custom key, the custom key is being ignored. Run `zotero_set_citekeys.py` to fix this.
+
+### References
+
+- [Citation Keys :: Better BibTeX for Zotero](https://retorque.re/zotero-better-bibtex/citing/) — BBT citation key documentation
+- [Zotero Citation Key Generation - Zotero Forums](https://forums.zotero.org/discussion/129826/zotero-citation-key-generation) — Zotero 8 native citation key field discussion
+- [Citation Key Field Missing from Info Pane - Zotero Forums](https://forums.zotero.org/discussion/129821/citation-key-field-missing-from-the-info-pane) — UI changes in Zotero 8
+- [BetterBibTeX Citation Key via Server API - Zotero Forums](https://forums.zotero.org/discussion/82437/betterbibtex-citation-key-when-accessing-group-library-via-server-api-pyzotero) — API access patterns for citation keys
+
+### Impact on Workflows
+
+- **Auto-export (`references.bib`):** BBT uses the native `citationKey` field for export. If your custom keys are only in Extra, the bib file will contain the old auto-generated keys.
+- **Quarto/Pandoc rendering:** Citation keys in your `.qmd` files must match what's in the exported `.bib`. A mismatch means unresolved references.
+- **Obsidian Citations plugin:** Same dependency on the exported bib file.
 
 ## Troubleshooting
 
