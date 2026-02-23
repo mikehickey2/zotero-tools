@@ -83,6 +83,7 @@ BBT_JSON_PATH=/path/to/your/export.json
 | `zotero_search.py` | Search library, browse collections | No |
 | `zotero_multi_search.py` | Multi-strategy search with ranking | No |
 | `zotero_set_citekeys.py` | Set custom citation keys (Zotero 8 native field) | Yes |
+| `zotero_set_tags.py` | Add/remove tags on specific items by key | Yes |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian | Creates files |
 
 ## Usage
@@ -162,6 +163,27 @@ CITEKEY_MAP = {
 The script also cleans up legacy `Citation Key:` lines from the Extra field (see Zotero 8 migration notes below).
 
 > **Important:** After running, open Zotero and wait for sync. BBT will re-export `references.bib` on idle. Verify with `grep` before rendering.
+
+### Tag Management
+
+Add or remove tags on specific Zotero items by item key. This script uses direct pyzotero API calls, which are more reliable than the Zotero MCP's batch tag operations.
+
+```bash
+# Add tags to items
+python zotero_set_tags.py --add "#Sec-LitReview" "#RQ-General" --items 7VLH3GJK --dry-run
+python zotero_set_tags.py --add "#Sec-LitReview" "#RQ-General" --items 7VLH3GJK
+
+# Remove tags
+python zotero_set_tags.py --remove "#Status-Unread" --items 7VLH3GJK
+
+# Add and remove in one pass
+python zotero_set_tags.py --add "#Status-Read" --remove "#Status-Unread" --items 7VLH3GJK
+
+# Verify tags were applied (read-after-write)
+python zotero_set_tags.py --add "#Sec-LitReview" --items 7VLH3GJK --verify
+```
+
+> **Why this script instead of MCP?** The Zotero MCP's `zotero_batch_update_tags` tool has proven unreliable — it reports success but tags are not always applied. This script uses direct pyzotero API calls with optional read-after-write verification, which is deterministic. Use this script for all tag write operations.
 
 ### Library Validation
 
@@ -436,6 +458,14 @@ If the native `citationKey` field has the old auto-generated key and Extra has y
 1. Wait a few moments for sync to complete
 2. Click the sync button in Zotero desktop
 3. Check the script output for any error messages
+
+### MCP Batch Tag Updates Not Working
+
+The Zotero MCP server's `zotero_batch_update_tags` tool may report success while silently failing to apply tags. This is a known issue with query-based batch operations. Use `zotero_set_tags.py` for reliable tag writes:
+
+```bash
+python zotero_set_tags.py --add "#Sec-LitReview" --items ITEMKEY --verify
+```
 
 ## Contributing
 

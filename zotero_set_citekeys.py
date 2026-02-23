@@ -33,6 +33,9 @@ CITEKEY_MAP = {
     "GZ2IKU58": "faaUASLostLink2016",
     "TBSBBMR5": "faaAirTrafficControl2016",
     "USXDG9JH": "howardFAASighting2023",
+    "UQKHKANJ": "DroneSightingsAirports",
+    "7VLH3GJK": "whitlockFAARecordsDetail2015",
+    "4JHDZBQ5": "gettingerDroneSightings2015",
 }
 
 

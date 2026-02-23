@@ -56,6 +56,11 @@ python zotero_multi_search.py --query "ASRS" --expand-tags    # Include tag matc
 python zotero_multi_search.py --query "LLM" --format json     # JSON output
 python zotero_multi_search.py --query "prompt" --limit 10     # Limit results
 
+# Tag management (direct API, more reliable than MCP batch)
+python zotero_set_tags.py --add "#Sec-LitReview" "#RQ-General" --items KEY1 KEY2 --dry-run
+python zotero_set_tags.py --add "#Sec-LitReview" "#RQ-General" --items KEY1 KEY2 --verify
+python zotero_set_tags.py --remove "#Status-Unread" --items KEY1
+
 # Vault sync
 python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 ```
@@ -74,6 +79,7 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 | `zotero_multi_search.py` | Multi-strategy search with dedup & ranking |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian vault |
 | `zotero_tag_patterns.py` | Reference for all tag regex patterns |
+| `zotero_set_tags.py` | Add/remove tags on specific items by key |
 
 ### Key Design Patterns
 
@@ -107,6 +113,7 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 - `zotero_apa7_cleanup.py`: 0.5s delay
 - `zotero_brace_cleanup.py`: 0.5s delay
 - `zotero_organize.py`: 1.0s delay
+- `zotero_set_tags.py`: 0.5s delay
 
 ## Configuration
 
@@ -141,6 +148,20 @@ Project-specific skills are available in `.claude/skills/`:
 | `superpowers:systematic-debugging` | Any bug, test failure, or unexpected behavior - trace root cause before fixing |
 | `superpowers:verification-before-completion` | Before claiming work complete - run validation and tests |
 | `superpowers:brainstorming` | Before implementing new features - explore requirements first |
+
+## Known Issues
+
+### Zotero MCP `zotero_batch_update_tags` Unreliable
+
+The Zotero MCP server's `zotero_batch_update_tags` tool reports success but silently fails to apply tags. This has been observed across multiple Claude Code sessions. The root cause appears to be the MCP tool's query-based batch approach, which does not guarantee atomic writes to specific items.
+
+**Workaround:** Use `zotero_set_tags.py` for all tag write operations. This script uses direct pyzotero API calls (`zot.item()` → modify → `zot.update_item()`) with optional read-after-write verification (`--verify`). This pattern is deterministic and has never failed.
+
+**Verification pattern:**
+```bash
+# Always verify after tag writes
+python zotero_set_tags.py --add "#Sec-LitReview" --items ITEMKEY --verify
+```
 
 ## Future Enhancements
 
