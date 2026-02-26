@@ -36,6 +36,7 @@ CITEKEY_MAP = {
     "UQKHKANJ": "DroneSightingsAirports",
     "7VLH3GJK": "whitlockFAARecordsDetail2015",
     "4JHDZBQ5": "gettingerDroneSightings2015",
+    "WISWCTT6": "sackettBiasAnalyticResearch1979",
 }
 
 

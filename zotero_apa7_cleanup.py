@@ -33,6 +33,7 @@ PROTECTED_TERMS: Set[str] = {
     'AGL', 'MSL', 'ATC', 'ARTCC', 'TRACON', 'ATCT', 'NMAC', 'CFR', 'VMC',
     'IMC', 'VFR', 'IFR', 'NM', 'ICAO', 'EASA', 'NTSB', 'HFACS', 'UASFMs',
     'SORA', 'ATM', 'BVLOS', 'C-UAS', 'cUAS', 'DAA', 'TCAS', 'ADS-B',
+    '7110.65W',  # FAA JO version designator
 
     # Technical/ML acronyms
     'LLM', 'LLMs', 'NLP', 'NER', 'GPT', 'BERT', 'AI', 'ML', 'API', 'JSON',
@@ -53,7 +54,7 @@ PROTECTED_TERMS: Set[str] = {
     # Eponymous statistical tests/measures (possessives handled by is_protected)
     'Mann', 'Kendall', 'Kruskal', 'Wallis', 'Shapiro', 'Wilk',
     'Fleiss', 'Krippendorff', 'Cronbach', 'Bonferroni', 'Tukey',
-    'Fisher', 'Pearson', 'Spearman', 'Wilcoxon', 'Likert', 'Sen',
+    'Fisher', 'Friedman', 'Pearson', 'Spearman', 'Wilcoxon', 'Likert', 'Sen',
     'Kaplan', 'Meier', 'Welch', 'Levene', 'Kolmogorov', 'Smirnov',
 
     # Proper nouns - organizations

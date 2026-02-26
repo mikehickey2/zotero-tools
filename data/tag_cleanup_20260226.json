@@ -1,0 +1,7 @@
+{
+  "mappings": [
+    {"old_tag": "Status-Unread", "new_tags": []},
+    {"old_tag": "Sec-Methods", "new_tags": []},
+    {"old_tag": "#RQ-RQ1-Extraction", "new_tags": ["#RQ1-Extraction"]}
+  ]
+}
