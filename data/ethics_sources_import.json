@@ -1,0 +1,52 @@
+[
+  {
+    "itemType": "report",
+    "title": "IATA releases 2024 safety report",
+    "creators": [
+      {"creatorType": "author", "name": "International Air Transport Association"}
+    ],
+    "date": "2025-02-26",
+    "institution": "International Air Transport Association",
+    "place": "Montreal, QC, Canada",
+    "url": "https://www.iata.org/en/pressroom/2025-releases/2025-02-26-01/",
+    "abstractNote": "Annual safety performance report. All-accident rate: 1.13 per million flights (2024), one accident per 880,000 flights. Five-year average (2020-2024): one accident per 810,000 flights, improved from one per 456,000 flights (2011-2015). IOSA carriers: 0.92 per million flights vs. 1.70 for non-IOSA.",
+    "extra": "Press Release No. 7"
+  },
+  {
+    "itemType": "webpage",
+    "title": "Aircraft and avionics equipment mechanics and technicians",
+    "creators": [
+      {"creatorType": "author", "name": "U.S. Bureau of Labor Statistics"}
+    ],
+    "date": "2025-08-28",
+    "url": "https://www.bls.gov/ooh/installation-maintenance-and-repair/aircraft-and-avionics-equipment-mechanics-and-technicians.htm",
+    "websiteTitle": "Occupational Outlook Handbook",
+    "abstractNote": "Employment: 139,400 aircraft mechanics and service technicians (2024), 21,400 avionics technicians. Projected growth: 5% from 2024 to 2034 (faster than average). Projected annual openings: 13,100. Median annual wage: $78,680 (May 2024)."
+  },
+  {
+    "itemType": "report",
+    "title": "2026 global fleet and MRO market assessment",
+    "creators": [
+      {"creatorType": "author", "name": "Aeronautical Repair Station Association"}
+    ],
+    "date": "2026-03-18",
+    "institution": "Aeronautical Repair Station Association",
+    "place": "Alexandria, VA",
+    "url": "https://arsa.org/market-assessment/",
+    "abstractNote": "U.S. MRO industry: $78.2 billion annual revenue, approximately 4,000 companies, 192,000 employees. American technicians produce 57% more revenue per capita than overseas counterparts. Worldwide: more than 5,000 companies employing nearly 430,000 people."
+  },
+  {
+    "itemType": "report",
+    "title": "Global fleet and MRO market forecast 2025-2035",
+    "creators": [
+      {"creatorType": "author", "firstName": "Brian", "lastName": "Prentice"},
+      {"creatorType": "author", "firstName": "Anthony", "lastName": "DiNota"},
+      {"creatorType": "author", "firstName": "Livia", "lastName": "Hayes"}
+    ],
+    "date": "2025-02",
+    "institution": "Oliver Wyman",
+    "place": "New York, NY",
+    "url": "https://www.oliverwyman.com/our-expertise/insights/2025/feb/global-fleet-and-mro-market-forecast-2025-2035.html",
+    "abstractNote": "Global MRO market projected at $119 billion (2025), surpassing 2019 record by 12%. Projected to reach $156 billion by 2035 (2.7% CAGR). North America: $28 billion (2025), $34 billion (2035). Global fleet: 29,079 aircraft (2025) to 38,309 (2035), 32% increase."
+  }
+]

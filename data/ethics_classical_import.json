@@ -1,0 +1,24 @@
+[
+  {
+    "itemType": "book",
+    "title": "An introduction to the principles of morals and legislation",
+    "creators": [
+      {"creatorType": "author", "firstName": "Jeremy", "lastName": "Bentham"}
+    ],
+    "date": "1789",
+    "place": "London, England",
+    "publisher": "T. Payne and Son",
+    "url": "https://doi.org/10.1093/oseo/instance.00077240",
+    "extra": "DOI: 10.1093/oseo/instance.00077240"
+  },
+  {
+    "itemType": "book",
+    "title": "Utilitarianism",
+    "creators": [
+      {"creatorType": "author", "firstName": "John Stuart", "lastName": "Mill"}
+    ],
+    "date": "1863",
+    "place": "London, England",
+    "publisher": "Parker, Son, and Bourn"
+  }
+]

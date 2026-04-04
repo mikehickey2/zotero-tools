@@ -1,0 +1,93 @@
+[
+  {
+    "itemType": "report",
+    "title": "Drone integration: Concept of operations",
+    "creators": [
+      {"creatorType": "author", "name": "Federal Aviation Administration"}
+    ],
+    "date": "2025-05",
+    "url": "https://www.faa.gov/uas/resources/policy_library/Drone-Integration-Concept-of-Operations-May-2025.pdf",
+    "institution": "Federal Aviation Administration",
+    "reportType": "Concept of Operations"
+  },
+  {
+    "itemType": "report",
+    "title": "Normalizing unmanned aircraft systems beyond visual line of sight operations (NPRM)",
+    "creators": [
+      {"creatorType": "author", "name": "Federal Aviation Administration"}
+    ],
+    "date": "2025-08-07",
+    "url": "https://www.federalregister.gov/documents/2025/08/07/2025-14992/normalizing-unmanned-aircraft-systems-beyond-visual-line-of-sight-operations",
+    "institution": "Federal Aviation Administration",
+    "reportNumber": "2025-14992",
+    "reportType": "Notice of Proposed Rulemaking"
+  },
+  {
+    "itemType": "report",
+    "title": "Remote identification of unmanned aircraft (final rule)",
+    "creators": [
+      {"creatorType": "author", "name": "Federal Aviation Administration"}
+    ],
+    "date": "2021-01-15",
+    "url": "https://www.faa.gov/uas/getting_started/remote_id",
+    "institution": "Federal Aviation Administration",
+    "reportType": "Final Rule"
+  },
+  {
+    "itemType": "report",
+    "title": "UAS traffic management (UTM) concept of operations v2.0",
+    "creators": [
+      {"creatorType": "author", "name": "Federal Aviation Administration"}
+    ],
+    "date": "2020-03",
+    "url": "https://www.faa.gov/sites/faa.gov/files/2022-08/UTM_ConOps_v2.pdf",
+    "institution": "Federal Aviation Administration",
+    "reportType": "Concept of Operations"
+  },
+  {
+    "itemType": "report",
+    "title": "FAA BVLOS drone operations",
+    "creators": [
+      {"creatorType": "author", "name": "Department of Transportation Office of Inspector General"}
+    ],
+    "date": "2025-06-30",
+    "url": "https://www.oig.dot.gov/sites/default/files/library-items/FAA%20BVLOS%20Drone%20Operations%20Final%20Report_6.30.2025.pdf",
+    "institution": "Department of Transportation Office of Inspector General",
+    "reportNumber": "AV2025034",
+    "reportType": "Audit Report"
+  },
+  {
+    "itemType": "report",
+    "title": "Unmanned aircraft systems: FAA could strengthen its implementation of a drone traffic management system by improving communication and measuring performance",
+    "creators": [
+      {"creatorType": "author", "name": "U.S. Government Accountability Office"}
+    ],
+    "date": "2021",
+    "url": "https://www.gao.gov/products/gao-21-165",
+    "institution": "U.S. Government Accountability Office",
+    "reportNumber": "GAO-21-165",
+    "reportType": "GAO Report"
+  },
+  {
+    "itemType": "report",
+    "title": "Defending America against drones: A whole-of-government approach",
+    "creators": [
+      {"creatorType": "author", "firstName": "Paul", "lastName": "Lushenko"},
+      {"creatorType": "author", "firstName": "Joseph", "lastName": "Amoroso"}
+    ],
+    "date": "2025",
+    "url": "https://techpolicyinstitute.org",
+    "institution": "Cornell Brooks Public Policy, Tech Policy Institute",
+    "reportType": "Policy Paper"
+  },
+  {
+    "itemType": "report",
+    "title": "Drone sightings analysis and recommendations",
+    "creators": [
+      {"creatorType": "author", "name": "Unmanned Aircraft Safety Team"}
+    ],
+    "date": "2017-12-12",
+    "institution": "Unmanned Aircraft Safety Team, Drone Sightings Working Group",
+    "reportType": "Executive Summary"
+  }
+]
