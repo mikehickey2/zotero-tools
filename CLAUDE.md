@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Dissertation research organization toolkit for managing Zotero citations focused on aviation/UAS safety research. Uses the Zotero API and Better BibTeX exports to automate title formatting and intelligent tagging.
+Research organization toolkit for managing Zotero citations. Primary use: dissertation research (aviation/UAS safety). Also used for comp exam projects. Uses the Zotero API and Better BibTeX exports to automate title formatting, metadata cleanup, and intelligent tagging.
 
 ## Environment Setup
 
@@ -77,6 +77,8 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 | `zotero_validate.py` | Validate library formatting |
 | `zotero_search.py` | Search library, browse collections, recent items |
 | `zotero_multi_search.py` | Multi-strategy search with dedup & ranking |
+| `zotero_import_items.py` | Import new items from JSON (any item type, APA7 metadata) |
+| `zotero_govinfo_import.py` | Fetch government publications (GAO, CRS, Congressional) via GovInfo API |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian vault |
 | `zotero_tag_patterns.py` | Reference for all tag regex patterns |
 | `zotero_set_tags.py` | Add/remove tags on specific items by key |
@@ -115,6 +117,27 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 - `zotero_organize.py`: 1.0s delay
 - `zotero_set_tags.py`: 0.5s delay
 
+## Zotero 8 + BBT 8+ Citation Keys (IMPORTANT)
+
+**Verified from BBT v8.0.0 changelog (GitHub):** Zotero 8 introduced a native `citationKey` field on all item types. BBT migrated its key storage to this field — BBT's old separate storage is gone. BBT still generates keys via formula patterns and "fills" them into Zotero's native field (`fillKeyAfter` pref, default 2 seconds). The old "pinning" concept was replaced by "filling" — keys are always persistent in the native field.
+
+**For Claude:** Keys appear within seconds of item creation via pyzotero API. Do NOT say "waiting for BBT sync" — the fill is nearly immediate. BBT's role is now key generation + `.bib` export, not key storage.
+
+**Note:** `zotero_search.py` extracts citation keys from the `extra` field (`Citation Key:` text pattern) as a legacy fallback. Zotero 8 stores keys in the native `citationKey` field, which pyzotero exposes via `item['data'].get('citationKey')`. The `extra` field extraction should be updated to check `citationKey` first.
+
+## Import Workflow (Adding Items to Library)
+
+**Claude MUST use `zotero_import_items.py` to add items — NEVER tell the user to create items manually.**
+
+1. **Verify identifier** — Run `/identifier-lookup` for DOI/ISBN/PMID before import. If found, user can use Zotero's "Add by Identifier" (faster). For grey literature without identifiers, proceed to step 2.
+2. **Create JSON** — Write APA7-compliant metadata to `/tmp/` (sentence-case title, split first/last names, ISO date, institution, place, URL)
+3. **Dry-run** — `python zotero_import_items.py --input /tmp/file.json --collection "00-Inbox" --dry-run --verbose`
+4. **Import** — Remove `--dry-run`
+5. **Tag** — `python zotero_set_tags.py --add "#Sec-X" "#RQ-X" "#Status-Unread" --items ITEMKEY --verify`
+6. **Verify** — Confirm via MCP; notify user to attach PDF
+
+**APA7 metadata is mandatory** for all imports: sentence-case titles, proper creator types, ISO dates, institutional place.
+
 ## Configuration
 
 Credentials via `.env` file (see `.env.example`):
@@ -122,6 +145,98 @@ Credentials via `.env` file (see `.env.example`):
 - `ZOTERO_LIBRARY_TYPE`: 'group' or 'user'
 - `ZOTERO_API_KEY`: API key with read/write access
 - `BBT_JSON_PATH`: Path to Better BibTeX JSON export
+
+### Multi-Library Support
+
+The `.env` file defaults to the dissertation library (`uas-sightings`, ID 6042289). To target a different library (e.g., comp exams), override `ZOTERO_LIBRARY_ID` via environment variable. `os.getenv()` checks env vars before `.env`, so the override takes precedence without modifying `.env`.
+
+```bash
+# Target comp-exam library (ID 6448487) for any script
+ZOTERO_LIBRARY_ID=6448487 python zotero_apa7_cleanup.py --dry-run
+
+# Same pattern works for all scripts
+ZOTERO_LIBRARY_ID=6448487 python zotero_brace_cleanup.py --dry-run
+ZOTERO_LIBRARY_ID=6448487 python zotero_set_tags.py --add "verified" --items KEY1 KEY2
+```
+
+**Known libraries:**
+
+| Library | ID | Purpose |
+|---------|-----|---------|
+| `uas-sightings` | 6042289 | Dissertation (default in `.env`) |
+| `comp-exam` | 6448487 | Comprehensive exams |
+
+**Item type changes via pyzotero:** When changing `itemType` (e.g., webpage → report), you must delete fields that are invalid for the new type before calling `zot.update_item()`. Use `zot.item_template('newType')` to get valid fields, then remove any current fields not in that set. Example pattern:
+
+```python
+item = zot.item('ITEMKEY')
+template = zot.item_template('report')
+valid_fields = set(template.keys())
+meta_fields = {'key', 'version', 'dateAdded', 'dateModified', 'relations', 'collections', 'tags'}
+for field in set(item['data'].keys()) - valid_fields - meta_fields:
+    del item['data'][field]
+item['data']['itemType'] = 'report'
+# set other fields...
+zot.update_item(item)
+```
+
+## Comp Exam Research Pipeline
+
+Repeatable template for comp exam source management. Tested on AVIT 521 (ethics exam, Session 29).
+
+### Pipeline Steps
+
+```
+1. Source Collection    → Web search, Google Scholar, identify 8-10 sources
+2. Identifier Lookup    → Crossref/OpenLibrary API for DOIs and ISBNs
+3. Zotero Import        → Batch paste identifiers into "Add by Identifier"
+4. Metadata Fixes       → pyzotero for item type changes, missing fields
+5. APA 7 Cleanup        → ZOTERO_LIBRARY_ID=6448487 python zotero_apa7_cleanup.py
+6. Brace Cleanup        → ZOTERO_LIBRARY_ID=6448487 python zotero_brace_cleanup.py
+7. Full-Text Pull       → Zotero local API (localhost:23119) for PDF content
+8. Research Briefing    → Executive dossier (landscape → frameworks → profiles → synthesis)
+9. Outline              → Claim-evidence-critique structure with source mapping
+```
+
+### Research Briefing Template
+
+The briefing document follows this structure for each exam:
+
+```markdown
+# [Topic] Research Briefing
+
+## Part 1: [Domain] Landscape (~2-3 pages)
+- History, scale, key players, regulatory picture, core debate
+
+## Part 2: The Analytical Frameworks (~2 pages)
+- Framework descriptions, why each fits, how they connect/diverge
+
+## Part 3: Source Profiles (~1-1.5 pages each)
+For each source:
+### [Author(s) (Year)] — "[Title]"
+- Journal/Publisher, Authors + affiliations
+- Research Gap, Methods, Key Findings, Conclusions
+- Relevance to exam, Key extractable claims
+- Peer-reviewed status, Citation count
+
+## Part 4: Synthesis (~1-2 pages)
+- Agreement/disagreement, convergence, gaps, "so what"
+```
+
+### Outline Template
+
+Each exam outline uses claim-evidence-critique per section:
+
+```markdown
+## Section (~N words)
+**Claim 1:** [assertion]
+- **Support:** [source + data]
+- **Critique/So what:** [analysis]
+
+**Claim 2:** ...
+
+**Sources:** [assigned sources for this section]
+```
 
 ## Custom Skills
 
