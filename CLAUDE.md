@@ -82,6 +82,7 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian vault |
 | `zotero_tag_patterns.py` | Reference for all tag regex patterns |
 | `zotero_set_tags.py` | Add/remove tags on specific items by key |
+| `zotero_set_citekeys.py` | Audit, abbreviate, and set citation keys (--audit, --fix, --set) |
 
 ### Key Design Patterns
 
