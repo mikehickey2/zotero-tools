@@ -84,6 +84,17 @@ BBT_JSON_PATH=/path/to/your/export.json
 | `zotero_multi_search.py` | Multi-strategy search with ranking | No |
 | `zotero_set_citekeys.py` | Set custom citation keys (Zotero 8 native field) | Yes |
 | `zotero_set_tags.py` | Add/remove tags on specific items by key | Yes |
+| `zotero_attach_with_verify.py` | Attach files to items with dedup safety + post-upload verification | Yes |
+| `zotero_edit_note.py` | Edit existing Zotero notes via batched patches with annotation-span safeguards | Yes |
+| `zotero_delete_annotation_block.py` | Companion to `zotero_edit_note.py` for safe deletion of annotation reference blocks | Yes |
+| `zotero_import_items.py` | Import any item type from JSON with APA7 metadata | Yes |
+| `zotero_add_item.py` | Create Zotero items from NTSB CAROL JSON data | Yes |
+| `zotero_govinfo_import.py` | Fetch US government publications (GAO, CRS, Congressional) and produce Zotero-ready JSON | No (produces JSON) |
+| `zotero_copy_items.py` | Copy items between libraries (metadata only) | Yes (target lib) |
+| `zotero_dedup.py` | Find and merge duplicate items by DOI or normalized title | Yes |
+| `zotero_inbox_fix.py` | One-time APA 7 metadata corrections for 00-Inbox batch | Yes |
+| `zotero_tag_migrate.py` | Migrate tags between schemas via JSON map (rollback-safe) | Yes |
+| `zotero_collection_migrate.py` | Create collections; move items with copy-then-remove safety | Yes |
 | `zotero_vault_sync.py` | Sync literature notes to Obsidian | Creates files |
 
 ## Usage
@@ -316,6 +327,53 @@ python zotero_collection_migrate.py --move-items moves.json --verify
 ```
 
 > **Safety:** Item moves use a copy-then-remove pattern. Items are added to the new collection first, verified to be present, then removed from the old collection. If verification fails, the item stays in the old collection.
+
+### File Attachment with Safety and Verification
+
+`zotero_attach_with_verify.py` attaches a file to a Zotero parent item with deduplication safety, annotation protection, and post-upload verification. It is the recommended tool for **all file attachment operations**.
+
+**Why this script instead of pyzotero's `attachment_simple` directly?** pyzotero's `attachment_simple` silently classifies uploads as `unchanged` when Zotero's server-side md5 deduplication matches a file already in storage. The server claims to auto-link the existing file, but this sometimes fails to propagate, leaving the attachment record without an accessible file blob. This wrapper detects that case and either polls until the link succeeds or surfaces a clear "manual drag-drop required" instruction.
+
+**Pre-flight safety checks** (run on every existing attachment of the parent item):
+
+| Check | Behavior |
+|-------|----------|
+| Existing attachment has annotations | Block by default (annotations are never modified or deleted); `--force-add` adds a new attachment alongside |
+| md5 of local file matches existing attachment | Skip silently as duplicate |
+| Same filename, different content | Block as suspicious replacement; `--force-add` proceeds |
+| Existing attachment is `<70%` of local filesize | Warn as possible fragment; `--force-add` proceeds |
+| Different file altogether | Proceed (additive attachment) |
+
+**Post-upload verification:** polls `fulltext_item` with exponential backoff (~15 second window) to confirm the file is actually accessible.
+
+```bash
+# Single file with default safety
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf
+
+# Dry run — runs all checks, no upload
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --dry-run
+
+# Verbose — see every check and decision
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --verbose
+
+# Proceed past warnings (filename match, fragment suspicion, annotations)
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --force-add
+
+# Bypass server-side dedup if attachment_simple unchanged + verify failed
+# (mutates a copy in /tmp; original file unchanged)
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --force-upload
+
+# Batch mode (JSON: {parent_key: [files]})
+python zotero_attach_with_verify.py --batch attachments.json
+```
+
+**Exit codes:**
+- `0` — uploaded or skipped (already attached); no user action needed
+- `1` — blocked by safety check; user must review
+- `2` — `attachment_simple` returned `unchanged` but verification failed; manual drag-drop or `--force-upload` required
+- `3` — unexpected error
+
+**Importable function:** `from zotero_utils import attach_with_safety` returns a structured dict with `status`, `message`, `decisions`, `attachment_key`, `verification`. Useful for chaining attach into other scripts (e.g., `zotero_import_items.py`).
 
 ### Obsidian Vault Sync
 

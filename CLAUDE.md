@@ -63,6 +63,13 @@ python zotero_set_tags.py --remove "#Status-Unread" --items KEY1
 
 # Vault sync
 python zotero_vault_sync.py --vault "/path/to/vault" --verbose
+
+# File attachment with safety + verification (handles attachment_simple bug)
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --dry-run
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --verbose
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --force-add
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --force-upload
+python zotero_attach_with_verify.py --batch attachments.json
 ```
 
 ## Architecture
@@ -83,6 +90,17 @@ python zotero_vault_sync.py --vault "/path/to/vault" --verbose
 | `zotero_tag_patterns.py` | Reference for all tag regex patterns |
 | `zotero_set_tags.py` | Add/remove tags on specific items by key |
 | `zotero_set_citekeys.py` | Audit, abbreviate, and set citation keys (--audit, --fix, --set) |
+| `zotero_attach_with_verify.py` | Attach files to items with dedup safety + post-upload verification (workaround for `attachment_simple` silent-failure bug) |
+| `zotero_edit_note.py` | Edit existing Zotero notes via batched patches with annotation-span safeguards |
+| `zotero_delete_annotation_block.py` | Delete annotation reference blocks safely (companion to `zotero_edit_note.py`) |
+| `zotero_add_item.py` | Create Zotero items from NTSB CAROL JSON data |
+| `zotero_govinfo_import.py` | Search GovInfo API and produce Zotero-ready JSON (GAO, CRS, Congressional) |
+| `zotero_copy_items.py` | Copy items between libraries (metadata only) |
+| `zotero_dedup.py` | Find and merge duplicates by DOI or normalized title+author+year |
+| `zotero_inbox_fix.py` | One-time APA 7 metadata corrections for batch-imported inbox items |
+| `zotero_tag_migrate.py` | Migrate tags between schemas via JSON map |
+| `zotero_collection_migrate.py` | Create collection hierarchies; move items with copy-then-remove safety |
+| `zotero_utils.py` | Shared module — `load_credentials()`, `compute_md5()`, `attach_with_safety()` |
 
 ### Key Design Patterns
 
@@ -267,6 +285,24 @@ Project-specific skills are available in `.claude/skills/`:
 
 ## Known Issues
 
+### pyzotero `attachment_simple` Silent Failure on Server-Side Dedup
+
+`pyzotero.attachment_simple()` classifies upload results as one of `success`, `failure`, or `unchanged`. The `unchanged` classification fires when Zotero's server-side md5 deduplication matches a file already in storage from any user. Per Zotero API docs, this is supposed to auto-link the existing file to the new attachment record — but in practice the link does not always propagate, leaving an empty attachment metadata stub on the parent item. `fulltext_item(attachment_key)` returns 404 on these stubs.
+
+This affects any file commonly uploaded to Zotero by other users — public PDFs from .gov, .mil, official journals, etc.
+
+**Root cause** (verified against pyzotero source [`_upload.py`](https://github.com/urschrei/pyzotero/blob/main/src/pyzotero/_upload.py)): pyzotero correctly trusts the Zotero API's `{"exists": 1}` response and reports `unchanged`. The actual gap is on the Zotero server side, not pyzotero.
+
+**Workaround:** Use `zotero_attach_with_verify.py` for all attachment operations. It calls `attachment_simple`, polls `fulltext_item` after the call to verify the file is actually accessible, and falls back to `--force-upload` (md5-mutation) when the dedup case blocks the upload. It also adds pre-flight safety checks for duplicates, fragments, and annotation protection.
+
+```bash
+# Always use the wrapper for attachments
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --verbose
+
+# When server-side dedup is blocking actual upload
+python zotero_attach_with_verify.py PARENT_KEY /path/to/file.pdf --force-upload
+```
+
 ### Zotero MCP `zotero_batch_update_tags` Unreliable
 
 The Zotero MCP server's `zotero_batch_update_tags` tool reports success but silently fails to apply tags. This has been observed across multiple Claude Code sessions. The root cause appears to be the MCP tool's query-based batch approach, which does not guarantee atomic writes to specific items.
@@ -278,6 +314,14 @@ The Zotero MCP server's `zotero_batch_update_tags` tool reports success but sile
 # Always verify after tag writes
 python zotero_set_tags.py --add "#Sec-LitReview" --items ITEMKEY --verify
 ```
+
+## Global Skills Available
+
+Visualization skills are available globally at `~/.claude/skills/`:
+- `gemini-visualization` — AI-generated conceptual figures
+- `mermaid-visualization` — Precise reproducible diagrams
+- `r-visualizations` — Data-driven statistical figures
+- `excalidraw-diagrams` — Wireframes, architecture sketches, brainstorming
 
 ## Future Enhancements
 
