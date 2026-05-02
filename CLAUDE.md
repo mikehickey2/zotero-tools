@@ -97,7 +97,7 @@ python zotero_attach_with_verify.py --batch attachments.json
 | `zotero_govinfo_import.py` | Search GovInfo API and produce Zotero-ready JSON (GAO, CRS, Congressional) |
 | `zotero_copy_items.py` | Copy items between libraries (metadata only) |
 | `zotero_dedup.py` | Find and merge duplicates by DOI or normalized title+author+year |
-| `zotero_inbox_fix.py` | One-time APA 7 metadata corrections for batch-imported inbox items |
+| `zotero_inbox_fix.py` | Batch APA 7 metadata corrections for inbox items. Supports `_creators` (creator list replacement) and `_itemType` (full itemType conversion with automatic invalid-field cleanup, per the item-type-change pattern documented below). |
 | `zotero_tag_migrate.py` | Migrate tags between schemas via JSON map |
 | `zotero_collection_migrate.py` | Create collection hierarchies; move items with copy-then-remove safety |
 | `zotero_utils.py` | Shared module — `load_credentials()`, `compute_md5()`, `attach_with_safety()` |

@@ -2,8 +2,14 @@
 """
 zotero_inbox_fix.py — One-time APA 7 metadata corrections for 00-Inbox items.
 
-Fixes titles (sentence case), author formatting, missing fields, and
-publisher normalization for 13 items imported 2026-02-12.
+Fixes titles (sentence case), author formatting, missing fields, publisher
+normalization, and itemType conversions for batch-imported inbox items.
+
+Special FIXES dict keys (all optional, all prefixed with underscore):
+    _creators  — replace creator list with new entries
+    _itemType  — convert to a different itemType (e.g. journalArticle ->
+                 presentation). Per the CLAUDE.md item-type-change pattern,
+                 fields not valid for the new type are dropped automatically.
 
 Usage:
     python zotero_inbox_fix.py --dry-run     # Preview all changes
@@ -20,6 +26,17 @@ from pyzotero.zotero_errors import HTTPError
 from zotero_utils import load_credentials
 
 RATE_LIMIT_DELAY = 0.5
+
+# Meta fields preserved across itemType change (per CLAUDE.md pattern).
+META_FIELDS = {
+    "key",
+    "version",
+    "dateAdded",
+    "dateModified",
+    "relations",
+    "collections",
+    "tags",
+}
 
 # Each entry: item_key -> dict of field corrections.
 # Only fields listed here are modified; all others are left untouched.
@@ -153,10 +170,47 @@ def apply_fixes(zot, dry_run=True):
         current_title = data.get("title", "")
         changes = []
 
+        # Handle itemType conversion FIRST so subsequent field writes
+        # validate against the new type's schema.
+        if "_itemType" in corrections:
+            new_type = corrections["_itemType"]
+            old_type = data.get("itemType", "")
+            if old_type != new_type:
+                try:
+                    template = zot.item_template(new_type)
+                except HTTPError as e:
+                    print(f"  ERROR fetching template for '{new_type}': {e}")
+                    errors += 1
+                    continue
+                valid_fields = set(template.keys())
+                current_fields = set(data.keys())
+                fields_to_drop = current_fields - valid_fields - META_FIELDS
+                changes.append(("itemType", old_type, new_type))
+                for field in sorted(fields_to_drop):
+                    old_value = data.get(field, "")
+                    changes.append((field, old_value, "(removed)"))
+                if not dry_run:
+                    for field in fields_to_drop:
+                        del data[field]
+                    data["itemType"] = new_type
+            else:
+                # Same type already; still set valid_fields so subsequent
+                # field writes can be validated.
+                template = zot.item_template(new_type)
+                valid_fields = set(template.keys())
+        else:
+            valid_fields = None  # field validation skipped if no _itemType
+
         # Apply field-level corrections
         for field, new_value in corrections.items():
-            if field == "_creators":
-                continue  # handled below
+            if field in ("_creators", "_itemType"):
+                continue  # handled separately
+            if valid_fields is not None and field not in valid_fields:
+                print(
+                    f"  WARNING: field '{field}' not valid for itemType "
+                    f"'{corrections.get('_itemType', data.get('itemType'))}'; skipping."
+                )
+                continue
             old_value = data.get(field, "")
             if old_value != new_value:
                 changes.append((field, old_value, new_value))
