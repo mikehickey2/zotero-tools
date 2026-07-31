@@ -168,6 +168,188 @@ def resolve_role(item_text: str, h2: str, h3: str):
     return None
 
 
-# CLI assembly comes in Task 4.
+# ─── Zotero write layer ─────────────────────────────────────────────
+
+from pyzotero import zotero
+from pyzotero.zotero_errors import HTTPError
+from zotero_utils import load_credentials
+
+SKIP_ITEM_TYPES = {"attachment", "annotation", "note"}
+RATE_LIMIT = 0.5
+EXTRA_KEY = "paper_role"
+NEEDS_DEEPER_TAG = "NeedsDeeperRead"
+
+
+def extract_extra_key(extra_text, key):
+    pattern = re.compile(rf"^{re.escape(key)}\s*:\s*(.+)$", re.MULTILINE)
+    m = pattern.search(extra_text or "")
+    return m.group(1).strip() if m else None
+
+
+def upsert_extra_key(extra_text, key, value):
+    pattern = re.compile(rf"^{re.escape(key)}\s*:.*$", re.MULTILINE)
+    new_line = f"{key}: {value}"
+    if pattern.search(extra_text):
+        return pattern.sub(new_line, extra_text, count=1)
+    if extra_text and not extra_text.endswith("\n"):
+        extra_text += "\n"
+    return extra_text + new_line
+
+
+def apply_paper_role(zot, item_key, role, *, dry_run=False, verify=False):
+    """Write paper_role to a single item's Extra field. Returns (action, message)."""
+    try:
+        item = zot.item(item_key)
+    except Exception as e:
+        return "error", f"{item_key}: fetch failed: {e}"
+
+    item_type = item["data"].get("itemType", "")
+    if item_type in SKIP_ITEM_TYPES:
+        return "skipped", f"{item_key}: {item_type} (skipping)"
+
+    title = item["data"].get("title", "(no title)")[:50]
+    extra = item["data"].get("extra", "") or ""
+    current = extract_extra_key(extra, EXTRA_KEY)
+
+    if current == role:
+        return "skipped", f"{item_key} [{title}] already paper_role={role}"
+
+    new_extra = upsert_extra_key(extra, EXTRA_KEY, role)
+    diff = f"paper_role: {current or '(none)'} -> {role}"
+
+    if dry_run:
+        return "updated", f"{item_key} [{title}]  {diff}"
+
+    item["data"]["extra"] = new_extra
+    try:
+        zot.update_item(item)
+    except HTTPError as e:
+        return "error", f"{item_key} [{title}]: API error: {e}"
+
+    msg = f"{item_key} [{title}]  {diff}"
+    if verify:
+        time.sleep(0.1)
+        try:
+            fresh = zot.item(item_key)
+            verified = extract_extra_key(fresh["data"].get("extra", ""), EXTRA_KEY)
+            if verified != role:
+                return "error", f"{msg}  VERIFY FAILED: got '{verified}'"
+            msg += "  verified"
+        except Exception as e:
+            return "error", f"{msg}  VERIFY ERROR: {e}"
+
+    return "updated", msg
+
+
+def apply_needs_deeper_tag(zot, item_key, *, dry_run=False, verify=False):
+    """Add #NeedsDeeperRead tag to a single item. Returns (action, message)."""
+    try:
+        item = zot.item(item_key)
+    except Exception as e:
+        return "error", f"{item_key}: fetch failed: {e}"
+
+    item_type = item["data"].get("itemType", "")
+    if item_type in SKIP_ITEM_TYPES:
+        return "skipped", f"{item_key}: {item_type} (skipping)"
+
+    title = item["data"].get("title", "(no title)")[:50]
+    current_tags = {t["tag"] for t in item["data"].get("tags", [])}
+
+    if NEEDS_DEEPER_TAG in current_tags:
+        return "skipped", f"{item_key} [{title}] already tagged"
+
+    new_tags = current_tags | {NEEDS_DEEPER_TAG}
+
+    if dry_run:
+        return "updated", f"{item_key} [{title}]  +{NEEDS_DEEPER_TAG}"
+
+    item["data"]["tags"] = [{"tag": t} for t in sorted(new_tags)]
+    try:
+        zot.update_item(item)
+    except HTTPError as e:
+        return "error", f"{item_key} [{title}]: API error: {e}"
+
+    msg = f"{item_key} [{title}]  +{NEEDS_DEEPER_TAG}"
+    if verify:
+        time.sleep(0.1)
+        try:
+            fresh = zot.item(item_key)
+            actual = {t["tag"] for t in fresh["data"].get("tags", [])}
+            if NEEDS_DEEPER_TAG not in actual:
+                return "error", f"{msg}  VERIFY FAILED: tag not present"
+            msg += "  verified"
+        except Exception as e:
+            return "error", f"{msg}  VERIFY ERROR: {e}"
+
+    return "updated", msg
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Seed paper_role from master reading plan into Zotero Extra field.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("--reading-plan", required=True,
+                        help="Path to master reading plan markdown")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Preview only; no writes")
+    parser.add_argument("--verify", action="store_true",
+                        help="Read-after-write confirmation")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="Print each action")
+    parser.add_argument("--skip-needs-deeper", action="store_true",
+                        help="Only write paper_role; skip NeedsDeeperRead tagging")
+    args = parser.parse_args()
+
+    print(f"Parsing reading plan: {args.reading_plan}")
+    mapping, needs_deeper = parse_reading_plan(args.reading_plan)
+    print(f"  {len(mapping)} citekey->role mappings found")
+    print(f"  {len(needs_deeper)} items flagged needs-deeper-read")
+    if args.verbose:
+        role_counts = Counter(mapping.values())
+        for role, n in sorted(role_counts.items(), key=lambda x: -x[1]):
+            print(f"    {role:18} {n}")
+    print()
+
+    library_id, library_type, api_key = load_credentials()
+    zot = zotero.Zotero(library_id, library_type, api_key)
+    print(f"Library: {library_type}/{library_id}")
+    mode = "DRY RUN" if args.dry_run else "APPLY"
+    print(f"Mode: {mode}\n")
+
+    counts = Counter()
+    items_list = list(mapping.items())
+    for i, (citekey, role) in enumerate(items_list):
+        action, msg = apply_paper_role(zot, citekey, role,
+                                         dry_run=args.dry_run, verify=args.verify)
+        counts[action] += 1
+        if args.verbose or action in ("error",):
+            prefix = {"updated": "->", "skipped": "  ", "error": "X "}.get(action, "? ")
+            print(f"  {prefix} {msg}")
+        if not args.dry_run and action == "updated" and i < len(items_list) - 1:
+            time.sleep(RATE_LIMIT)
+
+    if not args.skip_needs_deeper:
+        print("\nApplying #NeedsDeeperRead tags...")
+        for i, citekey in enumerate(needs_deeper):
+            action, msg = apply_needs_deeper_tag(zot, citekey,
+                                                  dry_run=args.dry_run, verify=args.verify)
+            counts[f"tag_{action}"] += 1
+            if args.verbose or action in ("error",):
+                prefix = {"updated": "->", "skipped": "  ", "error": "X "}.get(action, "? ")
+                print(f"  {prefix} {msg}")
+            if not args.dry_run and action == "updated" and i < len(needs_deeper) - 1:
+                time.sleep(RATE_LIMIT)
+
+    print("\n" + "=" * 60)
+    print("Summary:")
+    for action in sorted(counts.keys()):
+        if counts[action]:
+            print(f"  {action:18} {counts[action]}")
+    if args.dry_run:
+        print("\n[DRY RUN] No changes written. Re-run without --dry-run to apply.")
+
+
 if __name__ == "__main__":
-    pass
+    main()
